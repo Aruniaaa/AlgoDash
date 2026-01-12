@@ -1,0 +1,9 @@
+flask
+supabase
+requests
+groq
+dotenv
+jsonify
+markdown-it-py
+mdit-py-plugins
+linkify-it-py

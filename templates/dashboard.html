@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AlgoDash | Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#833cf6",
+                        "secondary": "#0ea5e9",
+                        "accent": "#f59e0b",
+                        "danger": "#ef4444",
+                        "success": "#22c55e",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#171022",
+                        "surface-dark": "#201b27",
+                        "border-dark": "#443b54",
+                        "text-muted": "#a79cba"
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }body::-webkit-scrollbar {
+            width: 8px;
+        }
+        body::-webkit-scrollbar-track {
+            background: #171022;
+        }
+        body::-webkit-scrollbar-thumb {
+            background-color: #443b54;
+            border-radius: 20px;
+        }
+        
+        #tag-chart-container {
+          scrollbar-width: thin;
+          scrollbar-color: #443b54 transparent;
+        }
+
+        #tag-chart-container::-webkit-scrollbar {
+          height: 6px;
+        }
+
+        #tag-chart-container::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        #tag-chart-container::-webkit-scrollbar-thumb {
+          background-color: #443b54;
+          border-radius: 20px;
+        }
+
+        #tag-chart-container::-webkit-scrollbar-thumb:hover {
+          background-color: #833cf6;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen flex flex-col selection:bg-primary selection:text-white">
+<nav class="sticky top-0 z-50 w-full border-b border-solid border-border-dark bg-background-dark/80 backdrop-blur-md">
+<div class="px-4 md:px-10 py-3 flex items-center justify-between max-w-[1400px] mx-auto">
+<div class="flex items-center gap-3 text-white">
+<div class="flex items-center justify-center size-8 bg-primary/20 rounded-lg text-primary">
+<span class="material-symbols-outlined text-2xl">terminal</span>
+</div>
+<h2 href="{{ url_for('landing') }}" class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">AlgoDash</h2>
+</div>
+<div class="hidden lg:flex items-center gap-8">
+<a class="text-primary transition-colors text-sm font-medium" href="{{ url_for('dashboard') }}">Dashboard</a>
+<a class="text-white hover:text-primary transition-colors text-sm font-medium" href="{{ url_for('problem_recommendation') }}">Problem Recommendations</a>
+<a class="text-white hover:text-primary transition-colors text-sm font-medium" href="{{ url_for('chat') }}">Chatbot</a>
+<a class="text-white hover:text-primary transition-colors text-sm font-medium" href="#">AI Feedback</a>
+</div>
+<div class="flex items-center gap-4">
+<a href="{{ url_for('contact') }}">
+    <button class="hidden sm:flex h-9 items-center justify-center px-4 rounded-lg border border-border-dark hover:border-primary text-white text-sm font-bold transition-all hover:bg-surface-dark">
+                    Contact Us
+                </button>
+        </a>
+<button class="sm:hidden text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-8 relative">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+<div class="flex flex-col gap-8">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-3xl font-bold mb-1">Welcome back, {{ username }}! 👋</h1>
+<p class="text-text-muted">Here's your competitive programming overview for today.</p>
+</div>
+</div>
+<section class="space-y-4">
+<div class="flex items-center gap-2 mb-6 p-1
+            bg-surface-dark/60 border border-border-dark
+            rounded-full w-fit"
+     data-widget="stats">
+
+  <button
+    data-platform="leetcode"
+    class="tab active
+           flex items-center gap-2 px-4 py-2 rounded-full
+           text-sm font-semibold
+           bg-primary/20 text-primary
+           transition-all duration-200">
+
+    <span class="material-symbols-outlined text-base">
+      task_alt
+    </span>
+    LeetCode
+  </button>
+
+  <button
+    data-platform="codeforces"
+    class="tab
+           flex items-center gap-2 px-4 py-2 rounded-full
+           text-sm font-medium
+           text-text-muted hover:text-white
+           hover:bg-white/5
+           transition-all duration-200">
+
+    <span class="material-symbols-outlined text-base">
+      military_tech
+    </span>
+    Codeforces
+  </button>
+
+  <button
+    data-platform="codechef"
+    class="tab
+           flex items-center gap-2 px-4 py-2 rounded-full
+           text-sm font-medium
+           text-text-muted hover:text-white
+           hover:bg-white/5
+           transition-all duration-200">
+
+    <span class="material-symbols-outlined text-base">
+      grade
+    </span>
+    CodeChef
+  </button>
+
+</div>
+
+
+<section id="stats-widget">
+
+
+  <div data-platform="leetcode"
+     class="stats-panel bg-surface-dark/40 backdrop-blur-md
+            border border-border-dark rounded-2xl p-6
+            grid grid-cols-1 md:grid-cols-3 gap-6">
+
+{% if platforms.leetcode.connected %}
+
+  <div class="md:col-span-1 flex flex-col justify-between gap-6">
+
+    <div class="flex items-center gap-4">
+      <div class="p-3 rounded-xl bg-primary/15 text-primary">
+        <span class="material-symbols-outlined">task_alt</span>
+      </div>
+      <div>
+        <p class="text-text-muted text-xs uppercase tracking-wide">
+          Total Solved
+        </p>
+        <p class="text-3xl font-bold">
+          {{ platforms.leetcode.data.totalSolved }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="p-3 rounded-xl bg-success/15 text-success">
+        <span class="material-symbols-outlined">percent</span>
+      </div>
+      <div>
+        <p class="text-text-muted text-xs uppercase tracking-wide">
+          Acceptance Rate
+        </p>
+        <p class="text-2xl font-bold">
+          {{ platforms.leetcode.data.acceptanceRate }}%
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="p-3 rounded-xl bg-accent/15 text-accent">
+        <span class="material-symbols-outlined">leaderboard</span>
+      </div>
+      <div>
+        <p class="text-text-muted text-xs uppercase tracking-wide">
+          Global Ranking
+        </p>
+        <p class="text-xl font-bold">
+          {{ platforms.leetcode.data.ranking }}
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="md:col-span-2 flex flex-col justify-center gap-4">
+
+    <div>
+      <div class="flex justify-between text-xs mb-1">
+        <span class="text-success font-medium">Easy</span>
+        <span class="text-text-muted">
+          {{ platforms.leetcode.data.easySolved }}
+          /
+          {{ platforms.leetcode.data.totalEasy }}
+        </span>
+      </div>
+      <div class="h-2 w-full bg-border-dark/40 rounded-full overflow-hidden">
+        <div class="h-full bg-success"
+             style="width: {{ (platforms.leetcode.data.easySolved / platforms.leetcode.data.totalEasy * 100) | round(1) }}%">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex justify-between text-xs mb-1">
+        <span class="text-accent font-medium">Medium</span>
+        <span class="text-text-muted">
+          {{ platforms.leetcode.data.mediumSolved }}
+          /
+          {{ platforms.leetcode.data.totalMedium }}
+        </span>
+      </div>
+      <div class="h-2 w-full bg-border-dark/40 rounded-full overflow-hidden">
+        <div class="h-full bg-accent"
+             style="width: {{ (platforms.leetcode.data.mediumSolved / platforms.leetcode.data.totalMedium * 100) | round(1) }}%">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex justify-between text-xs mb-1">
+        <span class="text-danger font-medium">Hard</span>
+        <span class="text-text-muted">
+          {{ platforms.leetcode.data.hardSolved }}
+          /
+          {{ platforms.leetcode.data.totalHard }}
+        </span>
+      </div>
+      <div class="h-2 w-full bg-border-dark/40 rounded-full overflow-hidden">
+        <div class="h-full bg-danger"
+             style="width: {{ (platforms.leetcode.data.hardSolved / platforms.leetcode.data.totalHard * 100) | round(1) }}%">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+{% else %}
+
+  <div class="col-span-full text-center py-12">
+    <span class="material-symbols-outlined text-4xl text-text-muted mb-3">
+      link_off
+    </span>
+    <p class="text-text-muted">
+      Please connect your
+      <span class="text-white font-semibold">LeetCode</span>
+      account to AlgoDash.
+    </p>
+  </div>
+
+{% endif %}
+</div>
+
+
+  <div data-platform="codeforces"
+     class="stats-panel hidden bg-surface-dark/40 backdrop-blur-md
+            border border-border-dark rounded-2xl p-6
+            grid grid-cols-1 md:grid-cols-3 gap-6">
+
+{% if platforms.codeforces.connected %}
+
+  <div class="md:col-span-1 flex flex-col justify-between gap-6">
+
+    <div class="flex items-center gap-4">
+      <div class="p-3 rounded-xl bg-primary/15 text-primary">
+        <span class="material-symbols-outlined">military_tech</span>
+      </div>
+      <div>
+        <p class="text-text-muted text-xs uppercase tracking-wide">
+          Current Rank
+        </p>
+        <p class="text-2xl font-bold capitalize">
+          {{ platforms.codeforces.data.rank }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="p-3 rounded-xl bg-accent/15 text-accent">
+        <span class="material-symbols-outlined">trending_up</span>
+      </div>
+      <div>
+        <p class="text-text-muted text-xs uppercase tracking-wide">
+          Max Rating
+        </p>
+        <p class="text-3xl font-bold">
+          {{ platforms.codeforces.data.maxRating }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="p-3 rounded-xl bg-success/15 text-success">
+        <span class="material-symbols-outlined">done_all</span>
+      </div>
+      <div>
+        <p class="text-text-muted text-xs uppercase tracking-wide">
+          Problems Solved
+        </p>
+        <p class="text-xl font-bold">
+          {{ platforms.codeforces.data.total_solved }}
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+    <div class="flex items-center gap-4 p-4 rounded-xl
+                bg-surface-dark/60 border border-border-dark">
+      <span class="material-symbols-outlined text-secondary">
+        code
+      </span>
+      <div>
+        <p class="text-text-muted text-xs uppercase">Most Used Language</p>
+        <p class="font-semibold">
+          {{ platforms.codeforces.data.most_used_lang }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 p-4 rounded-xl
+                bg-surface-dark/60 border border-border-dark">
+      <span class="material-symbols-outlined text-accent">
+        sell
+      </span>
+      <div>
+        <p class="text-text-muted text-xs uppercase">Top Topic</p>
+        <p class="font-semibold capitalize">
+          {{ platforms.codeforces.data.most_used_tag }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 p-4 rounded-xl
+                bg-surface-dark/60 border border-border-dark">
+      <span class="material-symbols-outlined text-primary">
+        article
+      </span>
+      <div>
+        <p class="text-text-muted text-xs uppercase">Blogs Written</p>
+        <p class="font-semibold">
+          {{ platforms.codeforces.data.blog_count }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 p-4 rounded-xl
+                bg-surface-dark/60 border border-border-dark">
+      <span class="material-symbols-outlined text-success">
+        star
+      </span>
+      <div>
+        <p class="text-text-muted text-xs uppercase">Best Blog Rating</p>
+        <p class="font-semibold">
+          {{ platforms.codeforces.data.best_rated_blog_ratings }}
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+{% else %}
+
+  <div class="col-span-full text-center py-12">
+    <span class="material-symbols-outlined text-4xl text-text-muted mb-3">
+      link_off
+    </span>
+    <p class="text-text-muted">
+      Please connect your
+      <span class="text-white font-semibold">Codeforces</span>
+      account to AlgoDash.
+    </p>
+  </div>
+
+{% endif %}
+</div>
+
+  <div data-platform="codechef"
+     class="stats-panel hidden bg-surface-dark/40 backdrop-blur-md
+            border border-border-dark rounded-2xl p-6
+            grid grid-cols-1 md:grid-cols-3 gap-6">
+
+{% if platforms.codechef.connected %}
+
+  <div class="md:col-span-1 flex flex-col justify-between gap-6">
+
+    <div class="flex items-center gap-4">
+      <div class="p-3 rounded-xl bg-accent/15 text-accent">
+        <span class="material-symbols-outlined">grade</span>
+      </div>
+      <div>
+        <p class="text-text-muted text-xs uppercase tracking-wide">
+          Star Rating
+        </p>
+        <p class="text-3xl font-bold">
+          {{ platforms.codechef.data.rating }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="p-3 rounded-xl bg-primary/15 text-primary">
+        <span class="material-symbols-outlined">speed</span>
+      </div>
+      <div>
+        <p class="text-text-muted text-xs uppercase tracking-wide">
+          Rating Score
+        </p>
+        <p class="text-2xl font-bold">
+          {{ platforms.codechef.data.rating_number }}
+        </p>
+      </div>
+    </div>
+<div class="flex flex-col bg-surface-dark/40 backdrop-blur-md border border-border-dark rounded-2xl overflow-hidden shadow-2xl">
+  <div class="px-5 py-3 border-b border-border-dark flex items-center justify-between bg-surface-dark/60 backdrop-blur-sm shrink-0">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary text-xl">auto_awesome</span>
+      <span class="text-xs font-semibold text-white uppercase tracking-wider">AI Analysis &amp; Explanation</span>
+    </div>
+    <div class="flex gap-2">
+      <button class="p-1.5 text-text-muted hover:text-white transition-colors" title="Copy Response">
+        <span class="material-symbols-outlined text-lg">content_copy</span>
+      </button>
+    </div>
+  </div>
+  
+
+  <div class="flex-1 p-6 overflow-y-auto custom-scrollbar font-body min-h-0">
+    <div id="loading-spinner" class="hidden flex-col items-center justify-center h-full gap-4">
+      <div class="relative w-16 h-16">
+        <div class="absolute inset-0 border-4 border-primary/30 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
+      </div>
+      <p class="text-text-muted text-sm animate-pulse">Analyzing your doubt...</p>
+    </div>
+    
+   
+    <div id="ai-response" class="prose prose-invert max-w-none text-gray-300 leading-relaxed space-y-4">
+      <p class="text-text-muted italic">Awaiting your doubt... Submit your query below to get a detailed breakdown of logic, complexity, and optimized code implementations.</p>
+    </div>
+  </div>
+</div>
+  </div>
+
+
+  <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+    <div class="flex items-center gap-4 p-4 rounded-xl
+                bg-surface-dark/60 border border-border-dark">
+      <span class="material-symbols-outlined text-primary">
+        public
+      </span>
+      <div>
+        <p class="text-text-muted text-xs uppercase">Global Rank</p>
+        <p class="font-semibold">
+          {{ platforms.codechef.data.global_rank }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 p-4 rounded-xl
+                bg-surface-dark/60 border border-border-dark">
+      <span class="material-symbols-outlined text-secondary">
+        flag
+      </span>
+      <div>
+        <p class="text-text-muted text-xs uppercase">
+          Country Rank ({{ platforms.codechef.data.country }})
+        </p>
+        <p class="font-semibold">
+          {{ platforms.codechef.data.country_rank }}
+        </p>
+      </div>
+    </div>
+
+{% endif %}
+</section>
+</section>
+<section class="space-y-4">
+
+  <div class="flex overflow-x-auto scrollbar-hide items-center gap-6 border-b border-border-dark pb-1">
+    <button data-heatmap="codeforces" class="heatmap-tab flex items-center gap-2 pb-3 border-b-2 border-primary text-white font-medium whitespace-nowrap">
+      <span class="material-symbols-outlined text-lg">ssid_chart</span>
+      Codeforces Rating History
+    </button>
+  </div>
+
+  <div class="heatmap-panels relative w-full h-80">
+
+  <div data-heatmap-panel="codeforces" class="absolute inset-0 bg-surface-dark/40 backdrop-blur-md border border-border-dark rounded-2xl p-6 flex flex-col">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="text-white font-bold">Rating Progression</h3>
+        <p class="text-xs text-text-muted">Contest history</p>
+      </div>
+      <div class="flex items-center gap-4 text-xs">
+        <div class="flex items-center gap-1">
+          <span class="text-text-muted">Current:</span>
+          <span class="text-white font-bold">{{ platforms.codeforces.data.maxRating }}</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-text-muted">Peak:</span>
+          <span class="text-accent font-bold">{{ platforms.codeforces.data.maxRating }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex-1 w-full relative">
+      <canvas id="cf-rating-chart"></canvas>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="pb-8">
+  <h3 class="text-white font-bold text-lg mb-4">Tag/Topic-wise Questions Distribution</h3>
+  <div class="w-full bg-surface-dark/40 backdrop-blur-md border border-border-dark rounded-2xl p-6 md:p-8">
+    <div class="relative">
+      <div class="overflow-x-auto scrollbar-hide">
+        <div id="tag-chart-container" class="flex items-end justify-start gap-3 md:gap-6 h-48 min-w-max px-2">
+        </div>
+      </div>
+      
+      <div class="flex justify-center gap-2 mt-4">
+        <button id="scroll-left" class="p-2 rounded-lg bg-surface-dark/60 border border-border-dark hover:border-primary transition-colors">
+          <span class="material-symbols-outlined text-sm">chevron_left</span>
+        </button>
+        <button id="scroll-right" class="p-2 rounded-lg bg-surface-dark/60 border border-border-dark hover:border-primary transition-colors">
+          <span class="material-symbols-outlined text-sm">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+</main>
+<footer class="border-t border-border-dark bg-background-dark py-8 mt-auto">
+<div class="max-w-[1400px] mx-auto px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-text-muted text-sm">© 2026 AlgoDash. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="text-text-muted hover:text-primary transition-colors text-sm" href="#">Privacy Policy</a>
+<a class="text-text-muted hover:text-primary transition-colors text-sm" href="#">Terms of Service</a>
+</div>
+</div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  
+
+  document.querySelectorAll('[data-widget]').forEach(widget => {
+    const tabs = widget.querySelectorAll('[data-platform]');
+    const panels = widget.nextElementSibling
+      ? widget.parentElement.querySelectorAll('.stats-panel')
+      : [];
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const platform = tab.dataset.platform;
+
+        tabs.forEach(t => {
+          t.classList.remove('active', 'bg-primary/20', 'text-primary', 'font-semibold');
+          t.classList.add('text-text-muted', 'font-medium');
+        });
+        
+        tab.classList.add('active', 'bg-primary/20', 'text-primary', 'font-semibold');
+        tab.classList.remove('text-text-muted', 'font-medium');
+
+        panels.forEach(panel => {
+          panel.classList.toggle(
+            'hidden',
+            panel.dataset.platform !== platform
+          );
+        });
+      });
+    });
+  });
+
+
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const ratingHistory = {{ platforms.codeforces.data.ratingHistory | tojson | safe }};
+    
+    if (ratingHistory && ratingHistory.length > 0) {
+        renderCodeforcesChart(ratingHistory);
+      }
+    });
+
+    const tagData = {{ tag_distribution | tojson | safe }};
+  
+    if (tagData && Object.keys(tagData).length > 0) {
+      renderTagChart(tagData);
+    }
+
+  function renderCodeforcesChart(ratingHistory) {
+    const ctx = document.getElementById('cf-rating-chart');
+    if (!ctx) return;
+
+    // Prepare data
+    const labels = ratingHistory.map(entry => {
+      const date = new Date(entry.date * 1000);
+      return date.toLocaleDateString('en-US', { year: '2-digit', month: 'short' });
+    });
+    
+    const ratings = ratingHistory.map(entry => entry.rating);
+    const maxRating = Math.max(...ratings);
+    const minRating = Math.min(...ratings);
+
+    function getRankColor(rating) {
+      if (rating >= 3000) return '#ff0000'; 
+      if (rating >= 2600) return '#ff8c00'; 
+      if (rating >= 2400) return '#ff0000'; 
+      if (rating >= 2300) return '#ff8c00'; 
+      if (rating >= 2100) return '#aa00aa'; 
+      if (rating >= 1900) return '#ff8c00';
+      if (rating >= 1600) return '#aa00aa'; 
+      if (rating >= 1400) return '#0000ff'; 
+      if (rating >= 1200) return '#03a89e'; 
+      return '#808080';
+    }
+
+    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(131, 60, 246, 0.3)');
+    gradient.addColorStop(1, 'rgba(131, 60, 246, 0)');
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Rating',
+          data: ratings,
+          borderColor: '#833cf6',
+          backgroundColor: gradient,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#833cf6',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointHoverBackgroundColor: '#833cf6',
+          pointHoverBorderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(32, 27, 39, 0.95)',
+            titleColor: '#fff',
+            bodyColor: '#a79cba',
+            borderColor: '#443b54',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: false,
+            callbacks: {
+              title: function(context) {
+                return context[0].label;
+              },
+              label: function(context) {
+                return 'Rating: ' + context.parsed.y;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: 'rgba(68, 59, 84, 0.3)',
+              drawBorder: false
+            },
+            ticks: {
+              color: '#a79cba',
+              maxTicksLimit: 10,
+              font: {
+                size: 11
+              }
+            }
+          },
+          y: {
+            min: Math.floor(minRating / 100) * 100 - 100,
+            max: Math.ceil(maxRating / 100) * 100 + 100,
+            grid: {
+              color: 'rgba(68, 59, 84, 0.3)',
+              drawBorder: false
+            },
+            ticks: {
+              color: '#a79cba',
+              stepSize: 200,
+              font: {
+                size: 11
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  const tabs = document.querySelectorAll('.heatmap-tab');
+  const panels = document.querySelectorAll('[data-heatmap-panel]');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.heatmap;
+
+      tabs.forEach(t => {
+        t.classList.remove('border-primary', 'text-white');
+        t.classList.add('border-transparent', 'text-text-muted');
+      });
+      tab.classList.add('border-primary', 'text-white');
+      tab.classList.remove('border-transparent', 'text-text-muted');
+
+      panels.forEach(panel => {
+        if (panel.dataset.heatmapPanel === target) {
+          panel.classList.remove('hidden');
+        } else {
+          panel.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+
+  function renderTagChart(tagData) {
+  const container = document.getElementById('tag-chart-container');
+  if (!container) {
+    console.error('tag-chart-container not found!');
+    return;
+  }
+
+  console.log('Tag data:', tagData);
+
+  const sortedTags = Object.entries(tagData).sort((a, b) => b[1] - a[1]);
+  
+  if (sortedTags.length === 0) {
+    console.error('No tags to display!');
+    container.innerHTML = '<p class="text-text-muted">No data available</p>';
+    return;
+  }
+  
+  const maxCount = Math.max(...sortedTags.map(([_, count]) => count));
+  
+  const colors = [
+    { bg: 'rgba(14, 165, 233, 0.2)', fill: '#0ea5e9' },
+    { bg: 'rgba(131, 60, 246, 0.2)', fill: '#833cf6' },
+    { bg: 'rgba(245, 158, 11, 0.2)', fill: '#f59e0b' },
+    { bg: 'rgba(34, 197, 94, 0.2)', fill: '#22c55e' },
+    { bg: 'rgba(239, 68, 68, 0.2)', fill: '#ef4444' },
+    { bg: 'rgba(99, 102, 241, 0.2)', fill: '#6366f1' },
+    { bg: 'rgba(236, 72, 153, 0.2)', fill: '#ec4899' },
+    { bg: 'rgba(139, 92, 246, 0.2)', fill: '#8b5cf6' },
+    { bg: 'rgba(6, 182, 212, 0.2)', fill: '#06b6d4' },
+    { bg: 'rgba(168, 85, 247, 0.2)', fill: '#a855f7' },
+  ];
+  
+  container.innerHTML = '';
+  
+  sortedTags.forEach(([tag, count], index) => {
+    const percentage = (count / maxCount) * 100;
+    const color = colors[index % colors.length];
+    
+    const barWrapper = document.createElement('div');
+    barWrapper.className = 'flex-shrink-0 flex flex-col items-center gap-2 group cursor-pointer';
+    barWrapper.style.width = '60px';
+    
+    const barContainer = document.createElement('div');
+    barContainer.className = 'w-full relative rounded-t-lg overflow-hidden transition-all duration-300';
+    barContainer.style.backgroundColor = color.bg;
+    barContainer.style.height = '192px'; 
+    barContainer.style.flexShrink = '0';
+    
+    const barFill = document.createElement('div');
+    barFill.className = 'absolute bottom-0 w-full rounded-t-lg transition-all duration-500';
+    barFill.style.backgroundColor = color.fill;
+    barFill.style.height = percentage + '%';
+    
+    const countLabel = document.createElement('div');
+    countLabel.className = 'absolute top-2 left-1/2 transform -translate-x-1/2 text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity z-10';
+    countLabel.textContent = count;
+    
+    const tagName = document.createElement('span');
+    tagName.className = 'text-[10px] text-text-muted text-center font-medium w-full truncate group-hover:text-white transition-colors';
+    tagName.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
+    tagName.title = tag + ': ' + count + ' problems';
+    
+    barWrapper.addEventListener('mouseenter', () => {
+      barContainer.style.backgroundColor = color.bg.replace('0.2', '0.3');
+      const newHeight = Math.min(percentage + 2, 100);
+      barFill.style.height = newHeight + '%';
+    });
+    
+    barWrapper.addEventListener('mouseleave', () => {
+      barContainer.style.backgroundColor = color.bg;
+      barFill.style.height = percentage + '%';
+    });
+    
+    barContainer.appendChild(barFill);
+    barContainer.appendChild(countLabel);
+    barWrapper.appendChild(barContainer);
+    barWrapper.appendChild(tagName);
+    container.appendChild(barWrapper);
+  });
+  
+  const scrollLeftBtn = document.getElementById('scroll-left');
+  const scrollRightBtn = document.getElementById('scroll-right');
+  const scrollContainer = container.parentElement;
+  
+  if (scrollLeftBtn && scrollRightBtn && scrollContainer) {
+    scrollLeftBtn.addEventListener('click', () => {
+      scrollContainer.scrollBy({ left: -300, behavior: 'smooth' });
+    });
+    
+    scrollRightBtn.addEventListener('click', () => {
+      scrollContainer.scrollBy({ left: 300, behavior: 'smooth' });
+    });
+  }
+}
+
+</script>
+</body></html>

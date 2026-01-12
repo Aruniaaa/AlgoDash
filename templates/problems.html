@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>AlgoDash | Problem Recommendations</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#833cf6",
+                        "secondary": "#0ea5e9",
+                        "accent": "#f59e0b",
+                        "danger": "#ef4444",
+                        "success": "#22c55e",
+                        "background-dark": "#171022",
+                        "surface-dark": "#201b27",
+                        "border-dark": "#443b54",
+                        "text-muted": "#a79cba"
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            @apply font-body;
+            background-color: #171022;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            @apply font-display;
+        }
+        .glass-card {
+            @apply bg-surface-dark/40 backdrop-blur-md border border-border-dark hover:border-primary/50 transition-all duration-300;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+        body::-webkit-scrollbar-track {
+            background: #171022;
+        }
+        body::-webkit-scrollbar-thumb {
+            background-color: #443b54;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen flex flex-col selection:bg-primary selection:text-white">
+
+<!-- Navigation (unchanged) -->
+<nav class="sticky top-0 z-50 w-full border-b border-solid border-border-dark bg-background-dark/80 backdrop-blur-md">
+    <div class="px-4 md:px-10 py-3 flex items-center justify-between max-w-[1400px] mx-auto">
+        <div class="flex items-center gap-3 text-white">
+            <div class="flex items-center justify-center size-8 bg-primary/20 rounded-lg text-primary">
+                <span class="material-symbols-outlined text-2xl">terminal</span>
+            </div>
+            <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">AlgoDash</h2>
+        </div>
+        <div class="hidden lg:flex items-center gap-8">
+            <a class="text-white hover:text-primary transition-colors text-sm font-medium" href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a class="text-primary transition-colors text-sm font-medium" href="{{ url_for('problem_recommendation') }}">Problem Recommendations</a>
+            <a class="text-white hover:text-primary transition-colors text-sm font-medium" href="{{ url_for('chat') }}">Chatbot</a>
+            <a class="text-white hover:text-primary transition-colors text-sm font-medium" href="#">AI Feedback</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="{{ url_for('contact') }}">
+                <button class="hidden sm:flex h-9 items-center justify-center px-4 rounded-lg border border-border-dark hover:border-primary text-white text-sm font-bold transition-all hover:bg-surface-dark">
+                    Contact Us
+                </button>
+            </a>
+            <button class="sm:hidden text-white">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<main class="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-8 relative">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+    
+    <div class="flex flex-col gap-8">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">Recommended for You</h1>
+            <p class="text-text-muted">AI-curated problems based on your recent performance on LeetCode, Codeforces, and CodeChef.</p>
+        </div>
+
+        <div class="flex items-center gap-2 p-1 rounded-xl bg-surface-dark/50 border border-border-dark w-fit">
+            <button data-platform="all" class="platform-tab px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold shadow-md">
+                All Platforms
+            </button>
+            <button data-platform="leetcode" class="platform-tab px-4 py-2 rounded-lg text-text-muted hover:text-white hover:bg-white/5 text-sm font-medium transition-colors">
+                LeetCode
+            </button>
+            <button data-platform="codeforces" class="platform-tab px-4 py-2 rounded-lg text-text-muted hover:text-white hover:bg-white/5 text-sm font-medium transition-colors">
+                Codeforces
+            </button>
+        </div>
+
+        <div id="problems-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% if recommendations.problems %}
+                {% for problem in recommendations.problems %}
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between group problem-card" data-platform="{{ problem.platform }}">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            {% if problem.platform == 'leetcode' %}
+                                <span class="px-2 py-1 rounded bg-orange-500/20 text-orange-400 text-[10px] font-bold uppercase tracking-wider">LeetCode</span>
+                                <span class="text-accent font-display font-bold">{{ problem.difficulty|capitalize }}</span>
+                            {% elif problem.platform == 'codeforces' %}
+                                <span class="px-2 py-1 rounded bg-secondary/20 text-secondary text-[10px] font-bold uppercase tracking-wider">Codeforces</span>
+                                <span class="text-accent font-display font-bold">{{ problem.rating if problem.rating else 'Unrated' }}</span>
+                            {% elif problem.platform == 'codechef' %}
+                                <span class="px-2 py-1 rounded bg-yellow-500/20 text-yellow-500 text-[10px] font-bold uppercase tracking-wider">CodeChef</span>
+                                <span class="text-accent font-display font-bold">{{ problem.rating if problem.rating else problem.difficulty|capitalize }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                            {{ problem.title }}
+                        </h3>
+
+                        {% if problem.get('is_daily') %}
+                            <div class="mb-2">
+                                <span class="px-2 py-1 rounded-full bg-success/20 text-success text-[10px] font-bold">
+                                    🔥 Daily Challenge
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-6 flex flex-col gap-3">
+                        <div class="flex gap-2 flex-wrap">
+                            {% for tag in problem.tags[:3] %}
+                                <span class="px-2 py-0.5 rounded-full bg-border-dark/40 text-text-muted text-[10px]">
+                                    {{ tag|capitalize }}
+                                </span>
+                            {% endfor %}
+                            {% if problem.tags|length > 3 %}
+                                <span class="px-2 py-0.5 rounded-full bg-border-dark/40 text-text-muted text-[10px]">
+                                    +{{ problem.tags|length - 3 }} more
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <a href="{{ problem.link }}" target="_blank" class="w-full py-2.5 bg-primary hover:bg-primary/90 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-primary/20 text-center">
+                            Solve Now
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-span-full text-center py-20">
+                    <span class="material-symbols-outlined text-6xl text-text-muted mb-4">
+                        search_off
+                    </span>
+                    <p class="text-text-muted text-lg">No problems found matching your criteria.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if recommendations.contests %}
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold mb-6">Upcoming Contests</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for contest in recommendations.contests %}
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="mb-4">
+                        {% if contest.platform == 'leetcode' %}
+                            <span class="px-2 py-1 rounded bg-orange-500/20 text-orange-400 text-[10px] font-bold uppercase tracking-wider">LeetCode</span>
+                        {% elif contest.platform == 'codeforces' %}
+                            <span class="px-2 py-1 rounded bg-secondary/20 text-secondary text-[10px] font-bold uppercase tracking-wider">Codeforces</span>
+                        {% elif contest.platform == 'codechef' %}
+                            <span class="px-2 py-1 rounded bg-yellow-500/20 text-yellow-500 text-[10px] font-bold uppercase tracking-wider">CodeChef</span>
+                        {% endif %}
+                    </div>
+
+                    <h3 class="text-xl font-bold text-white mb-3">{{ contest.title }}</h3>
+
+                   <div class="space-y-2 mb-4">
+                        <div class="flex items-center gap-2 text-text-muted text-sm">
+                            <span class="material-symbols-outlined text-base">schedule</span>
+                            <span>{{ contest.contest_start|replace('T', ' ')|truncate(16, True, '') }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-text-muted text-sm">
+                            <span class="material-symbols-outlined text-base">timer</span>
+                            <span>{{ contest.duration_hours }} hours</span>
+                        </div>
+                    </div>
+
+                    <a href="{{ contest.link }}" target="_blank" class="block w-full py-2.5 bg-primary hover:bg-primary/90 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-primary/20 text-center">
+                        Register Now
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</main>
+
+<footer class="border-t border-border-dark bg-background-dark py-8 mt-auto">
+    <div class="max-w-[1400px] mx-auto px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-text-muted text-sm">© 2026 AlgoDash. All rights reserved.</p>
+        <div class="flex gap-6">
+            <a class="text-text-muted hover:text-primary transition-colors text-sm" href="#">Privacy Policy</a>
+            <a class="text-text-muted hover:text-primary transition-colors text-sm" href="#">Terms of Service</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.platform-tab');
+    const problemCards = document.querySelectorAll('.problem-card');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const platform = tab.dataset.platform;
+
+            tabs.forEach(t => {
+                t.classList.remove('bg-primary', 'text-white', 'font-bold', 'shadow-md');
+                t.classList.add('text-text-muted', 'font-medium');
+            });
+            tab.classList.add('bg-primary', 'text-white', 'font-bold', 'shadow-md');
+            tab.classList.remove('text-text-muted', 'font-medium');
+
+            problemCards.forEach(card => {
+                if (platform === 'all' || card.dataset.platform === platform) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        });
+    });
+});
+</script>
+
+</body>
+</html>

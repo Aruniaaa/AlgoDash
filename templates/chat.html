@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AlgoDash | Chatbot</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#833cf6",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#171022",
+                        "surface-dark": "#201b27",
+                        "border-dark": "#443b54",
+                        "text-muted": "#a79cba"
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #443b54;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #833cf6;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen flex flex-col selection:bg-primary selection:text-white">
+<nav class="sticky top-0 z-50 w-full border-b border-solid border-border-dark bg-background-dark/80 backdrop-blur-md">
+<div class="px-4 md:px-10 py-3 flex items-center justify-between max-w-[1400px] mx-auto">
+<div class="flex items-center gap-3 text-white">
+<div class="flex items-center justify-center size-8 bg-primary/20 rounded-lg text-primary">
+<span class="material-symbols-outlined text-2xl">terminal</span>
+</div>
+<h2 href="{{ url_for('landing') }}" class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">AlgoDash</h2>
+</div>
+<div class="hidden lg:flex items-center gap-8">
+<a class="text-primary transition-colors text-sm font-medium" href="{{ url_for('dashboard') }}">Dashboard</a>
+<a class="text-white hover:text-primary transition-colors text-sm font-medium" href="{{ url_for('problem_recommendation') }}">Problem Recommendations</a>
+<a class="text-white hover:text-primary transition-colors text-sm font-medium" href="{{ url_for('chat') }}">Chatbot</a>
+<a class="text-white hover:text-primary transition-colors text-sm font-medium" href="#">AI Feedback</a>
+</div>
+<div class="flex items-center gap-4">
+<a href="{{ url_for('contact') }}">
+    <button class="hidden sm:flex h-9 items-center justify-center px-4 rounded-lg border border-border-dark hover:border-primary text-white text-sm font-bold transition-all hover:bg-surface-dark">
+            Contact Us
+    </button>
+        </a>
+<button class="sm:hidden text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="flex-1 flex flex-col p-4 md:p-6 lg:p-8 relative h-[calc(100vh-65px)]">
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[600px] bg-primary/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+<div class="flex-1 w-full max-w-6xl mx-auto flex flex-col gap-6 relative z-10">
+<div class="flex items-center justify-between shrink-0">
+<div class="flex items-center gap-4">
+<div class="size-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary shadow-lg shadow-primary/5">
+<span class="material-symbols-outlined text-3xl">psychology</span>
+</div>
+<div>
+<h1 class="text-2xl font-bold text-white tracking-tight">AI Doubt Resolver</h1>
+<p class="text-text-muted text-sm">Paste your problem statement or code for instant debugging and explanations.</p>
+</div>
+</div>
+</div>
+<div class="flex-1 grid grid-rows-2 gap-6 min-h-0">
+<div class="flex flex-col bg-surface-dark/40 backdrop-blur-md border border-border-dark rounded-2xl overflow-hidden shadow-2xl">
+  <div class="px-5 py-3 border-b border-border-dark flex items-center justify-between bg-surface-dark/60 backdrop-blur-sm shrink-0">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary text-xl">auto_awesome</span>
+      <span class="text-xs font-semibold text-white uppercase tracking-wider">AI Analysis &amp; Explanation</span>
+    </div>
+    <div class="flex gap-2">
+      <button class="p-1.5 text-text-muted hover:text-white transition-colors" title="Copy Response">
+        <span class="material-symbols-outlined text-lg">content_copy</span>
+      </button>
+    </div>
+  </div>
+  
+  
+  <div class="flex-1 p-6 overflow-y-auto min-h-0 custom-scrollbar">
+    <div id="loading-spinner" class="hidden flex-col items-center justify-center h-full gap-4">
+      <div class="relative w-16 h-16">
+        <div class="absolute inset-0 border-4 border-primary/30 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin"></div>
+      </div>
+      <p class="text-text-muted text-sm animate-pulse">Analyzing your doubt...</p>
+    </div>
+    
+
+    <div id="ai-response" class="prose prose-invert max-w-none text-gray-300 leading-relaxed">
+      <p class="text-text-muted italic">Awaiting your doubt... Submit your query below to get a detailed breakdown of logic, complexity, and optimized code implementations.</p>
+    </div>
+  </div>
+</div>
+</div>
+<div class="flex flex-col bg-surface-dark/40 backdrop-blur-md border border-border-dark rounded-2xl overflow-hidden shadow-2xl focus-within:border-primary/50 transition-colors">
+<div class="px-5 py-3 border-b border-border-dark flex items-center justify-between bg-surface-dark/60 backdrop-blur-sm shrink-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-text-muted text-xl">edit_note</span>
+<span class="text-xs font-semibold text-white uppercase tracking-wider">Your Doubt</span>
+</div>
+<span class="text-[10px] text-text-muted uppercase tracking-widest font-bold">Markdown Supported</span>
+</div>
+<div class="flex-1 relative flex flex-col">
+<textarea id="doubt-input" class="flex-1 w-full p-6 bg-transparent border-none text-white placeholder:text-text-muted/50 focus:ring-0 resize-none font-mono text-sm leading-relaxed custom-scrollbar" placeholder="Paste the problem link, code snippet, or explain what you're struggling with..."></textarea>
+<div class="p-4 flex items-center justify-between border-t border-border-dark/50 bg-surface-dark/20">
+<button id="ask-ai-btn" class="flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 active:translate-y-0 group">
+  <span id="btn-text">Ask AI</span>
+  <span id="btn-icon" class="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">bolt</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-center gap-8 text-[11px] text-text-muted font-medium py-2">
+<div class="flex items-center gap-1.5">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+<span>Optimized for Codeforces &amp; LeetCode</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="size-1.5 rounded-full bg-blue-500"></span>
+<span>Context-aware reasoning</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="size-1.5 rounded-full bg-purple-500"></span>
+<span>Real-time code debugging</span>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-0 right-0 w-full h-1/4 bg-gradient-to-t from-background-dark via-background-dark/50 to-transparent pointer-events-none -z-10"></div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const askBtn = document.getElementById('ask-ai-btn');
+  const doubtInput = document.getElementById('doubt-input');
+  const loadingSpinner = document.getElementById('loading-spinner');
+  const aiResponse = document.getElementById('ai-response');
+  const btnText = document.getElementById('btn-text');
+  const btnIcon = document.getElementById('btn-icon');
+
+  askBtn.addEventListener('click', async () => {
+    const doubt = doubtInput.value.trim();
+
+    if (!doubt) {
+      alert('Please enter your doubt or paste a problem!');
+      return;
+    }
+
+    askBtn.disabled = true;
+    askBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    btnText.textContent = 'Processing...';
+    btnIcon.textContent = 'hourglass_empty';
+    btnIcon.classList.add('animate-spin');
+
+  
+    loadingSpinner.classList.remove('hidden');
+    loadingSpinner.classList.add('flex');
+    aiResponse.classList.add('hidden');
+
+    try {
+      const response = await fetch('{{ url_for("chat") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          doubt: doubt
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response from AI');
+      }
+
+      const data = await response.json();
+
+      loadingSpinner.classList.add('hidden');
+      loadingSpinner.classList.remove('flex');
+      aiResponse.classList.remove('hidden');
+
+      if (data.success) {
+        aiResponse.innerHTML = data.response;
+      } else {
+        aiResponse.innerHTML = '<p class="text-red-400">Error: ' + (data.error || 'Something went wrong') + '</p>';
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+      
+    
+      loadingSpinner.classList.add('hidden');
+      loadingSpinner.classList.remove('flex');
+      aiResponse.classList.remove('hidden');
+      aiResponse.innerHTML = '<p class="text-red-400">Failed to connect to AI. Please try again.</p>';
+    } finally {
+
+      askBtn.disabled = false;
+      askBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      btnText.textContent = 'Ask AI';
+      btnIcon.textContent = 'bolt';
+      btnIcon.classList.remove('animate-spin');
+    }
+  });
+
+
+
+  document.querySelector('[title="Copy Response"]').addEventListener('click', () => {
+    const text = aiResponse.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = event.currentTarget;
+      const icon = btn.querySelector('.material-symbols-outlined');
+      icon.textContent = 'check';
+      setTimeout(() => {
+        icon.textContent = 'content_copy';
+      }, 2000);
+    });
+  });
+});
+</script>
+</body></html>
