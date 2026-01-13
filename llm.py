@@ -1,12 +1,147 @@
 from groq import Groq
 import os
 from dotenv import load_dotenv
+import json
+
+
 
 load_dotenv()
 
 groq_api = os.getenv("GROQ_API_KEY")
 
 client = Groq(api_key=groq_api)
+
+response_format = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "daily_cp_feedback",
+        "strict": True,
+        "schema": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": [
+                "failed_submissions",
+                "ratings_and_progress",
+                "profile_and_tags",
+                "resources",
+                "suggested_priorities"
+            ],
+            "properties": {
+                "failed_submissions": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": [
+                        "analysis",
+                        "recommended_approach",
+                        "common_mistakes_to_watch"
+                    ],
+                    "properties": {
+                        "analysis": { "type": "string" },
+                        "recommended_approach": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        },
+                        "common_mistakes_to_watch": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        }
+                    }
+                },
+                "ratings_and_progress": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": [
+                        "current_snapshot",
+                        "diagnosis",
+                        "improvement_strategy"
+                    ],
+                    "properties": {
+                        "current_snapshot": { "type": "string" },
+                        "diagnosis": { "type": "string" },
+                        "improvement_strategy": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        }
+                    }
+                },
+                "profile_and_tags": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": [
+                        "strengths",
+                        "weaknesses",
+                        "tag_distribution_feedback"
+                    ],
+                    "properties": {
+                        "strengths": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        },
+                        "weaknesses": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        },
+                        "tag_distribution_feedback": { "type": "string" }
+                    }
+                },
+                "resources": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": [
+                        "practice_sets",
+                        "learning_materials",
+                        "platform_specific_tips"
+                    ],
+                    "properties": {
+                        "practice_sets": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        },
+                        "learning_materials": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        },
+                        "platform_specific_tips": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        }
+                    }
+                },
+                "suggested_priorities": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["today", "this_week", "long_term"],
+                    "properties": {
+                        "today": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        },
+                        "this_week": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        },
+                        "long_term": {
+                            "type": "array",
+                            "items": { "type": "string" },
+                            "minItems": 1
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 def get_ai_response(query, context):
 
@@ -65,6 +200,16 @@ def get_ai_response(query, context):
     - Reference platforms authentically: "On Codeforces, this would be a Div2 C problem..."
     - Keep responses concise and actionable — competitive programmers value efficiency.
 
+    Output Formatting Rules (MANDATORY):
+
+    - Use GitHub-Flavored Markdown.
+    - Use headings with ## and ### for major sections and subsections.
+    - Use bullet lists (-) for enumerations.
+    - Use **bold** for key concepts and constraints.
+    - Use inline code formatting (`like this`) for flags, variables, and states.
+    - Do NOT use plain numbered paragraphs for sectioning.
+    - Every response MUST be valid Markdown and render cleanly with MarkdownIt.
+
     CONTEXT START
 
     {context}
@@ -83,3 +228,49 @@ def get_ai_response(query, context):
         ]
     )
     return completion.choices[0].message.content
+
+
+
+def feedback_generator(info):
+
+    prompt = f"""You are AlgoMentor, an analytical competitive programming coach.
+
+        Generate daily feedback based on a user’s recent submissions, ratings, and profile statistics.
+
+        Focus on diagnosis and prescription:
+        - Explain why failures happened (logic, complexity, edge cases).
+        - Relate feedback to rating level and progress.
+        - Analyze strengths, weaknesses, and tag imbalance.
+        - Recommend specific resources and concrete next actions.
+
+        Constraints:
+        - Be specific and data-grounded.
+        - Avoid generic advice.
+        - Do not provide code or solve problems.
+        - Assume familiarity with competitive programming terminology.
+        - Vary phrasing and recommendations across days.
+
+        If information is missing, infer cautiously and reflect uncertainty through phrasing.
+        Here is the user info: {info}.
+
+
+        """
+    
+    response = client.chat.completions.create(
+        model="openai/gpt-oss-120b",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ], 
+        response_format=response_format
+    )
+
+    return json.loads(response.choices[0].message.content or "{}")
+
+
+
+
+
+  

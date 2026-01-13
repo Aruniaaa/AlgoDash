@@ -2,7 +2,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>AlgoDash - Contact Us</title>
+<title>AlgoDash | Contact Us</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
@@ -52,9 +52,9 @@
       <!-- CENTER: Navigation Links (absolute center) -->
       <div class="hidden lg:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
         <a class="text-white hover:text-primary transition-colors text-sm font-medium whitespace-nowrap" href="{{ url_for('dashboard') }}">Dashboard</a>
-        <a class="text-white hover:text-primary transition-colors text-sm font-medium whitespace-nowrap" href="#">Problem Recommendations</a>
-        <a class="text-white hover:text-primary transition-colors text-sm font-medium whitespace-nowrap" href="#">Chatbot</a>
-        <a class="text-white hover:text-primary transition-colors text-sm font-medium whitespace-nowrap" href="#">AI Feedback</a>
+        <a class="text-white hover:text-primary transition-colors text-sm font-medium whitespace-nowrap" href="{{ url_for('problem_recommendation') }}">Problem Recommendations</a>
+        <a class="text-white hover:text-primary transition-colors text-sm font-medium whitespace-nowrap" href="{{ url_for('chat') }}">Chatbot</a>
+        <a class="text-white hover:text-primary transition-colors text-sm font-medium whitespace-nowrap" href="{{ url_for('ai_feedback') }}">AI Feedback</a>
       </div>
       
       <!-- RIGHT: Contact Us button (stays right) -->

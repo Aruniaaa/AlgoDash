@@ -4,17 +4,22 @@ from flask import session, redirect, url_for, request
 import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
-from info import get_unified_problem_recommendations, get_unified_tag_distribution, get_full_codeforces_profile_stats, get_codechef_profile_stats, get_full_leetcode_profile_stats
-from llm import get_ai_response
+from info import get_recent_failed_problem_summaries, get_leetcode_submissions, get_recent_failed_leetcode_problems, get_unified_problem_recommendations, get_unified_tag_distribution, get_full_codeforces_profile_stats, get_codechef_profile_stats, get_full_leetcode_profile_stats
+from llm import get_ai_response, feedback_generator
 from flask import jsonify
 from mdit_py_plugins.texmath import texmath_plugin
 from markdown_it import MarkdownIt
+from datetime import datetime, timezone
+
 
 load_dotenv()
 
 url: str = os.getenv("SUPABASE_URL")
 key: str = os.getenv("SUPABASE_KEY")
+secret_key: str = os.getenv("SUPABASE_SERVICE_KEY")
 supabase: Client = create_client(url, key)
+
+supabase_admin: Client = create_client(url, secret_key)
 
 conversation_history = []
 
@@ -174,44 +179,61 @@ def contact():
 @login_required
 @app.route("/dashboard", endpoint="dashboard", methods=["GET"])
 def dashboard():
-    leetcode_user = session.get("leetcode_username")
-    codeforces_user = session.get("codeforces_username")
-    codechef_user = session.get("codechef_username")
 
-    if leetcode_user:
-        leetcode_data = get_full_leetcode_profile_stats(leetcode_user)
-    if codechef_user:
-        codechef_data = get_codechef_profile_stats(codechef_user)
-    if codeforces_user:
-        codeforces_data = get_full_codeforces_profile_stats(codeforces_user)
+    platforms = session.get("dashboard_info", None)
+
+    if platforms is None:
+        leetcode_user = session.get("leetcode_username")
+        codeforces_user = session.get("codeforces_username")
+        codechef_user = session.get("codechef_username")
+
+        if leetcode_user:
+            leetcode_data = get_full_leetcode_profile_stats(leetcode_user)
+        if codechef_user:
+            codechef_data = get_codechef_profile_stats(codechef_user)
+        if codeforces_user:
+            codeforces_data = get_full_codeforces_profile_stats(codeforces_user)
+
+        platforms = {
+            "leetcode": {
+                "connected": bool(leetcode_user),
+                "data": leetcode_data if leetcode_user else None,
+            },
+            "codeforces": {
+                "connected": bool(codeforces_user),
+                "data": codeforces_data if codeforces_user else None,
+            },
+            "codechef": {
+                "connected": bool(codechef_user),
+                "data": codechef_data if codechef_user else None,
+            },
+        }
+
     if leetcode_user or codeforces_user:
-        tag_distributions = get_unified_tag_distribution(leetcode_user, codeforces_user)
+        tag_distribution = session.get("tag_distribution", None)
+        if tag_distribution is None:
+            leetcode_username = session.get("leetcode_username")
+            codeforces_username = session.get("codeforces_username")
+            
+            tag_distribution = get_unified_tag_distribution(
+                leetcode_username=leetcode_username if leetcode_username else None,
+                codeforces_handle=codeforces_username if codeforces_username else None
+            )
+            session['tag_distribution'] = tag_distribution
 
    
-    platforms = {
-        "leetcode": {
-            "connected": bool(leetcode_user),
-            "data": leetcode_data if leetcode_user else None,
-        },
-        "codeforces": {
-            "connected": bool(codeforces_user),
-            "data": codeforces_data if codeforces_user else None,
-        },
-        "codechef": {
-            "connected": bool(codechef_user),
-            "data": codechef_data if codechef_user else None,
-        },
-    }
 
     if not any(p["connected"] for p in platforms.values()):
         flash("Please connect at least one platform to continue.")
-        return redirect(url_for("landing"))  
+        return redirect(url_for("landing"))
     
+    
+    session['dashboard_info'] = platforms
     return render_template(
         "dashboard.html",
         username=session.get("username"),
         platforms=platforms,
-        tag_distribution=tag_distributions
+        tag_distribution=tag_distribution
     )
 
 @login_required
@@ -266,13 +288,16 @@ def chat():
 @app.route("/problem_recommendation", endpoint="problem_recommendation")
 def problem_recommendation():
     if request.method == "GET":
-        leetcode_username = session.get("leetcode_username")
-        codeforces_username = session.get("codeforces_username")
-        
-        tag_distribution = get_unified_tag_distribution(
-            leetcode_username=leetcode_username if leetcode_username else None,
-            codeforces_handle=codeforces_username if codeforces_username else None
-        )
+        tag_distribution = session.get("tag_distribution", None)
+        if tag_distribution is None:
+            leetcode_username = session.get("leetcode_username")
+            codeforces_username = session.get("codeforces_username")
+            
+            tag_distribution = get_unified_tag_distribution(
+                leetcode_username=leetcode_username if leetcode_username else None,
+                codeforces_handle=codeforces_username if codeforces_username else None
+            )
+            session['tag_distribution'] = tag_distribution
         
         weak_tags = []
         if tag_distribution:
@@ -301,6 +326,108 @@ def problem_recommendation():
             tag_distribution=tag_distribution
         )
 
+
+
+@login_required
+@app.route("/ai_feedback", endpoint="ai_feedback")
+def ai_feedback():
+    user_id = session.get("user_id")
+    today_utc = datetime.now(timezone.utc).date()
+
+
+    res = (
+        supabase
+        .table("profiles")
+        .select("ai_feedback, last_feedback_generated")
+        .eq("id", user_id)
+        .maybe_single()
+        .execute()
+    )
+
+    row = res.data if res and res.data else None
+
+    if row and row.get("last_feedback_generated"):
+        last_generated_date = datetime.fromisoformat(
+            row["last_feedback_generated"].replace("Z", "+00:00")
+        ).date()
+
+        if last_generated_date == today_utc:
+            return jsonify(row["ai_feedback"])
+
+
+    tag_distro = session.get("tag_distribution")
+    if tag_distro is None:
+        tag_distro = get_unified_tag_distribution(
+            leetcode_username=session.get("leetcode_username"),
+            codeforces_handle=session.get("codeforces_username"),
+        )
+        session["tag_distribution"] = tag_distro
+
+    dashboard_info = session.get("dashboard_info")
+    if dashboard_info is None:
+        leetcode_user = session.get("leetcode_username")
+        codeforces_user = session.get("codeforces_username")
+        codechef_user = session.get("codechef_username")
+
+        dashboard_info = {
+            "leetcode": {
+                "connected": bool(leetcode_user),
+                "data": get_full_leetcode_profile_stats(leetcode_user)
+                if leetcode_user else None,
+            },
+            "codeforces": {
+                "connected": bool(codeforces_user),
+                "data": get_full_codeforces_profile_stats(codeforces_user)
+                if codeforces_user else None,
+            },
+            "codechef": {
+                "connected": bool(codechef_user),
+                "data": get_codechef_profile_stats(codechef_user)
+                if codechef_user else None,
+            },
+        }
+        session["dashboard_info"] = dashboard_info
+
+    failed_leetcode = None
+    failed_codeforces = None
+
+    if session.get("leetcode_username"):
+        failed_leetcode = get_recent_failed_leetcode_problems(
+            get_leetcode_submissions(session.get("leetcode_username"))
+        )
+
+    if session.get("codeforces_username"):
+        failed_codeforces = get_recent_failed_problem_summaries(
+            session.get("codeforces_username")
+        )
+
+
+    info_to_send = {
+        "tag_distribution": tag_distro,
+        "dashboard_info": dashboard_info,
+        "failed_leetcode": failed_leetcode,
+        "failed_codeforces": failed_codeforces,
+    }
+
+
+    ai_feedback = feedback_generator(info_to_send)
+
+    if not isinstance(ai_feedback, dict):
+        raise RuntimeError("LLM feedback generation failed")
+
+    supabase_admin.table("profiles").upsert(
+        {
+            "id": user_id,
+            "ai_feedback": ai_feedback,
+            "last_feedback_generated": datetime.now(timezone.utc).isoformat(),
+        },
+        on_conflict="id",
+    ).execute()
+
+    return render_template("ai_feedback.html", ai_feedback=ai_feedback)
+
+
+    
 
 
 if __name__ == '__main__':
