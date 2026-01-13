@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, redirect, url_for, session, flash
+from flask_caching import Cache
 from functools import wraps
-from flask import session, redirect, url_for, request
 import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -38,6 +38,15 @@ def login_required(view_func):
 
 app = Flask(__name__, template_folder="templates")
 app.secret_key = os.getenv("SECRET_KEY")
+
+config = {
+    "DEBUG": True,          
+    "CACHE_TYPE": "SimpleCache", 
+    "CACHE_DEFAULT_TIMEOUT": 3600
+}
+
+app.config.from_mapping(config)
+cache = Cache(app)
 
 @app.route("/", endpoint="landing")
 def landing():
@@ -178,9 +187,10 @@ def contact():
 
 @login_required
 @app.route("/dashboard", endpoint="dashboard", methods=["GET"])
+@cache.cached()
 def dashboard():
 
-    platforms = session.get("dashboard_info", None)
+    platforms = cache.get(f"user:{session.get("user_id")}:profile")
 
     if platforms is None:
         leetcode_user = session.get("leetcode_username")
@@ -210,7 +220,7 @@ def dashboard():
         }
 
     if leetcode_user or codeforces_user:
-        tag_distribution = session.get("tag_distribution", None)
+        tag_distribution = cache.get(f"user:{session.get('user_id')}:tag")
         if tag_distribution is None:
             leetcode_username = session.get("leetcode_username")
             codeforces_username = session.get("codeforces_username")
@@ -219,8 +229,6 @@ def dashboard():
                 leetcode_username=leetcode_username if leetcode_username else None,
                 codeforces_handle=codeforces_username if codeforces_username else None
             )
-            session['tag_distribution'] = tag_distribution
-
    
 
     if not any(p["connected"] for p in platforms.values()):
@@ -228,7 +236,9 @@ def dashboard():
         return redirect(url_for("landing"))
     
     
-    session['dashboard_info'] = platforms
+    cache.set(f"user:{session.get('user_id')}:profile", platforms)
+    cache.set(f"user:{session.get('user_id')}:tag", tag_distribution)
+
     return render_template(
         "dashboard.html",
         username=session.get("username"),
@@ -286,9 +296,10 @@ def chat():
 
 @login_required
 @app.route("/problem_recommendation", endpoint="problem_recommendation")
+@cache.cached()
 def problem_recommendation():
     if request.method == "GET":
-        tag_distribution = session.get("tag_distribution", None)
+        tag_distribution = cache.get(f"user:{session.get('user_id')}:tag")
         if tag_distribution is None:
             leetcode_username = session.get("leetcode_username")
             codeforces_username = session.get("codeforces_username")
@@ -297,7 +308,7 @@ def problem_recommendation():
                 leetcode_username=leetcode_username if leetcode_username else None,
                 codeforces_handle=codeforces_username if codeforces_username else None
             )
-            session['tag_distribution'] = tag_distribution
+            cache.set(f"user:{session.get('user_id')}:tag", tag_distribution)
         
         weak_tags = []
         if tag_distribution:
@@ -330,6 +341,7 @@ def problem_recommendation():
 
 @login_required
 @app.route("/ai_feedback", endpoint="ai_feedback")
+@cache.cached()
 def ai_feedback():
     user_id = session.get("user_id")
     today_utc = datetime.now(timezone.utc).date()
@@ -355,15 +367,15 @@ def ai_feedback():
             return jsonify(row["ai_feedback"])
 
 
-    tag_distro = session.get("tag_distribution")
+    tag_distro = cache.get(f"user:{session.get('user_id')}:tag")
     if tag_distro is None:
         tag_distro = get_unified_tag_distribution(
             leetcode_username=session.get("leetcode_username"),
             codeforces_handle=session.get("codeforces_username"),
         )
-        session["tag_distribution"] = tag_distro
+        cache.set(f"user:{session.get('user_id')}:tag", tag_distro)
 
-    dashboard_info = session.get("dashboard_info")
+    dashboard_info = cache.get(f"user:{session.get('user_id')}:profile")
     if dashboard_info is None:
         leetcode_user = session.get("leetcode_username")
         codeforces_user = session.get("codeforces_username")
@@ -386,7 +398,7 @@ def ai_feedback():
                 if codechef_user else None,
             },
         }
-        session["dashboard_info"] = dashboard_info
+        cache.set(f"user:{session.get('user_id')}:profile", dashboard_info)
 
     failed_leetcode = None
     failed_codeforces = None
