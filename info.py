@@ -334,7 +334,6 @@ def get_blog_info(handle):
 
 def get_full_codeforces_profile_stats(handle):
 
-
     try:
         data = {}
         tags_info, solved = get_topic_distribution(handle)
@@ -374,7 +373,6 @@ LEETCODE!!
 """
 
 def get_leetcode_submissions(username, accepted_only=False):
-    """Get LeetCode submissions (all or accepted only)"""
     endpoint = f"/leetcode/{username}/acSubmission" if accepted_only else f"/leetcode/{username}/submission"
     url = f"{API_BASE}{endpoint}"
     res = requests.get(url)
@@ -390,6 +388,7 @@ def get_recent_failed_leetcode_problems(submissions, limit=3):
 
     problems = {}
 
+    print(submissions)
     for sub in submissions:
         slug = sub.get("titleSlug")
         title = sub.get("title")
@@ -446,7 +445,6 @@ def get_recent_failed_leetcode_problems(submissions, limit=3):
 
 def get_leetcode_tag_distribution(username):
     tag_mapping = {
-        # Direct matches
         'math': 'math',
         'greedy': 'greedy',
         'dynamic-programming': 'dp',
@@ -468,7 +466,7 @@ def get_leetcode_tag_distribution(username):
         'combinatorics': 'combinatorics',
         'number-theory': 'number theory',
         
-        # Data structures mappings
+
         'array': 'data structures',
         'matrix': 'data structures',
         'linked-list': 'data structures',
@@ -482,7 +480,7 @@ def get_leetcode_tag_distribution(username):
         'union-find': 'data structures',
         'design': 'data structures',
         
-        # Additional common LeetCode tags
+    
         'backtracking': 'brute force',
         'divide-and-conquer': 'brute force',
         'recursion': 'brute force',
@@ -611,7 +609,7 @@ def get_leetcode_contests():
     
 
 def get_leetcode_daily_challenge():
-    url = "http://localhost:3000/leetcode/daily"
+    url = f"{API_BASE}/leetcode/daily"
     
     try:
         response = requests.get(url)
@@ -983,5 +981,3 @@ def get_unified_problem_recommendations(
         'total_contests': len(all_contests)
     }
 
-if __name__ == "__main__":
-    print(get_recent_failed_leetcode_problems(get_leetcode_submissions("Aruniaaaaa")))

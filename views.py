@@ -439,7 +439,6 @@ def ai_feedback():
     return render_template("ai_feedback.html", ai_feedback=ai_feedback)
 
 
-    
 
 
 if __name__ == '__main__':

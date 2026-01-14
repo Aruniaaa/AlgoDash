@@ -142,27 +142,6 @@
                     Get Started
                 </button>
     </a>
-<button class="flex min-w-[160px] h-12 items-center justify-center rounded-lg px-6 bg-transparent border border-surface-border hover:border-primary text-white text-base font-bold transition-all hover:bg-surface-dark/50 gap-2">
-<span class="material-symbols-outlined text-[20px]">play_circle</span>
-                    View Demo
-                </button>
-</div>
-<div class="mt-16 w-full max-w-4xl rounded-xl border border-surface-border bg-[#0d0a12]/80 backdrop-blur-md shadow-2xl p-4 md:p-6 overflow-hidden relative group">
-<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
-<div class="flex gap-2 mb-4">
-<div class="size-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
-<div class="size-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
-<div class="size-3 rounded-full bg-green-500/20 border border-green-500/50"></div>
-</div>
-<div class="font-mono text-left text-sm md:text-base text-gray-400 overflow-x-auto">
-<div class="flex"><span class="text-purple-400 mr-2">const</span> <span class="text-blue-400">userStats</span> <span class="text-white mx-2">=</span> <span class="text-yellow-300">await</span> algoDash.<span class="text-blue-300">analyze</span>({</div>
-<div class="flex pl-4"><span class="text-gray-300">platforms:</span> [<span class="text-green-400">'leetcode'</span>, <span class="text-green-400">'codeforces'</span>],</div>
-<div class="flex pl-4"><span class="text-gray-300">targetRating:</span> <span class="text-primary">2400</span>,</div>
-<div class="flex pl-4"><span class="text-gray-300">weaknesses:</span> [<span class="text-green-400">'dynamic_programming'</span>, <span class="text-green-400">'graphs'</span>]</div>
-<div class="flex">});</div>
-<div class="flex mt-2"><span class="text-gray-500">// AI Recommendation: Solve these 3 problems to improve DP skill by 15%</span></div>
-</div>
-</div>
 </div>
 </section>
 <section class="py-20 px-4 md:px-10 bg-background-dark/50 relative" id="features">
@@ -296,9 +275,11 @@
                         Join thousands of developers mastering algorithms with AlgoDash. Stop guessing what to practice next.
                     </p>
 <div class="flex flex-col sm:flex-row gap-4 mt-4 w-full justify-center">
+<a href="{{ url_for('dashboard') }}">
 <button class="h-12 px-8 rounded-lg bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(131,60,246,0.4)]">
                             Try it out!
                         </button>
+</a>
 </div>
 </div>
 </div>
