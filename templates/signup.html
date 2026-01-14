@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AlgoDash | Sign Up</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#833cf6",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#171022",
+                        "surface-dark": "#201b27",
+                        "border-dark": "#443b54",
+                        "text-muted": "#a79cba"
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen flex flex-col overflow-x-hidden selection:bg-primary selection:text-white">
+<!-- Navigation -->
+<nav class="sticky top-0 z-50 w-full border-b border-solid border-border-dark bg-background-dark/80 backdrop-blur-md">
+<div class="px-4 md:px-10 py-3 flex items-center max-w-[1400px] mx-auto">
+<div class="flex items-center gap-3 text-white">
+<div class="flex items-center justify-center size-8 bg-primary/20 rounded-lg text-primary">
+<span class="material-symbols-outlined text-2xl">terminal</span>
+</div>
+<h2 href="{{ url_for('landing') }}" class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">AlgoDash</h2>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 flex justify-center py-12 px-4 md:px-8 relative">
+<!-- Abstract Background Glow -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+<div class="w-full max-w-[640px] flex flex-col gap-8">
+<!-- Page Heading -->
+<div class="text-center md:text-left space-y-3">
+<h1 class="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">Initialize Profile</h1>
+<p class="text-text-muted text-lg font-normal leading-relaxed max-w-lg">Track progress, get AI insights, and crush your next contest.</p>
+</div>
+<!-- Form Container -->
+<form id="signup-form" action="{{ url_for('signup') }}" method="post" class="bg-surface-dark/50 border border-border-dark rounded-xl p-6 md:p-8 shadow-xl backdrop-blur-sm">
+<!-- Section 1: Credentials -->
+<div class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<label class="flex flex-col gap-2">
+<span class="text-white text-sm font-medium">Username</span>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">person</span>
+<input name="username" class="w-full h-12 rounded-lg bg-background-dark border border-border-dark text-white placeholder-text-muted px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="coder123" type="text"/>
+</div>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-white text-sm font-medium">Email</span>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">mail</span>
+<input name="email" class="w-full h-12 rounded-lg bg-background-dark border border-border-dark text-white placeholder-text-muted px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="you@example.com" type="email"/>
+</div>
+</label>
+</div>
+<label class="flex flex-col gap-2">
+<span class="text-white text-sm font-medium">Password</span>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">lock</span>
+<input name="password" class="w-full h-12 rounded-lg bg-background-dark border border-border-dark text-white placeholder-text-muted px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Create a strong password" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors" type="button">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+</div>
+</label>
+</div>
+<div class="my-8 h-px bg-border-dark w-full"></div>
+<!-- Section 2: Coding Profiles -->
+<div class="space-y-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+<h2 class="text-white text-lg font-bold leading-tight">Connect Profiles</h2>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+<span class="material-symbols-outlined text-primary text-sm">info</span>
+<span class="text-primary text-xs font-bold uppercase tracking-wider">At least one required</span>
+</div>
+</div>
+<div class="space-y-4">
+<!-- LeetCode -->
+<div class="relative flex items-center group">
+<div class="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center bg-background-dark rounded-l-lg border-y border-l border-border-dark group-focus-within:border-primary transition-colors z-10">
+<span class="material-symbols-outlined text-[#ffa116]">code</span>
+</div>
+<input name="leetcode" class="w-full h-14 pl-14 pr-4 rounded-lg bg-background-dark/50 border border-border-dark text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="LeetCode Username" type="text"/>
+</div>
+<!-- Codeforces -->
+<div class="relative flex items-center group">
+<div class="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center bg-background-dark rounded-l-lg border-y border-l border-border-dark group-focus-within:border-primary transition-colors z-10">
+<span class="material-symbols-outlined text-[#1f8dd6]">bar_chart</span>
+</div>
+<input name="codeforces" class="w-full h-14 pl-14 pr-4 rounded-lg bg-background-dark/50 border border-border-dark text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Codeforces Handle" type="text"/>
+</div>
+<!-- CodeChef -->
+<div class="relative flex items-center group">
+<div class="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center bg-background-dark rounded-l-lg border-y border-l border-border-dark group-focus-within:border-primary transition-colors z-10">
+<span class="material-symbols-outlined text-[#5b4638]">dataset</span>
+</div>
+<input name="codechef" class="w-full h-14 pl-14 pr-4 rounded-lg bg-background-dark/50 border border-border-dark text-white placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="CodeChef Handle" type="text"/>
+</div>
+</div>
+</div>
+<!-- Submit Button -->
+<div class="mt-10">
+<button class="relative w-full h-14 bg-primary hover:bg-primary/90 text-white text-base font-bold rounded-lg shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 overflow-hidden group">
+<span class="relative z-10">Sign Up</span>
+<span class="material-symbols-outlined relative z-10 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+</button>
+<p class="text-center text-text-muted text-sm mt-4">
+                        Already have an account? <a class="text-primary hover:text-white transition-colors font-medium" href="{{ url_for('login') }}">Log in</a>
+</p>
+</div>
+</form>
+</div>
+</main>
+<!-- Background Decorative Elements -->
+<div class="fixed bottom-0 right-0 w-full h-1/3 bg-gradient-to-t from-background-dark via-background-dark/0 to-transparent pointer-events-none"></div>
+<script>
+  document.getElementById('signup-form').addEventListener('submit', function (e) {
+    const leetcode = this.elements['leetcode'].value.trim();
+    const codeforces = this.elements['codeforces'].value.trim();
+    const codechef = this.elements['codechef'].value.trim();
+
+    const hasAtLeastOne =
+      leetcode !== '' || codeforces !== '' || codechef !== '';
+
+    if (!hasAtLeastOne) {
+      e.preventDefault();
+
+      alert('Please enter at least one coding profile (LeetCode, Codeforces, or CodeChef).');
+    }
+  });
+</script>
+
+</body></html>
