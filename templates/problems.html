@@ -76,7 +76,7 @@
             <div class="flex items-center justify-center size-8 bg-primary/20 rounded-lg text-primary">
                 <span class="material-symbols-outlined text-2xl">terminal</span>
             </div>
-            <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">AlgoDash</h2>
+            <a class="text-white text-xl font-bold tracking-tight" href="{{ url_for('landing') }}">AlgoDash</a>
         </div>
         <div class="hidden lg:flex items-center gap-8">
             <a class="text-white hover:text-primary transition-colors text-sm font-medium" href="{{ url_for('dashboard') }}">Dashboard</a>
@@ -222,7 +222,7 @@
 <footer class="border-t border-border-dark bg-background-dark py-8 mt-auto">
     <div class="max-w-[1400px] mx-auto px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
         <p class="text-text-muted text-sm">© 2026 AlgoDash. All rights reserved.</p>
-        <div class="flex gap-6">
+        <div class="flex gap-6 hidden">
             <a class="text-text-muted hover:text-primary transition-colors text-sm" href="#">Privacy Policy</a>
             <a class="text-text-muted hover:text-primary transition-colors text-sm" href="#">Terms of Service</a>
         </div>

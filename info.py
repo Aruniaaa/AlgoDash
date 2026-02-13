@@ -189,68 +189,71 @@ def get_codeforces_user_info(handle):
 
 
 def get_recent_failed_problem_summaries(handle, limit=3):
-    url = f"{BASE_URL}user.status?handle={handle}"
-    res = requests.get(url)
 
-    if res.status_code != 200:
-        return []
+    if handle:
+        url = f"{BASE_URL}user.status?handle={handle}"
+        res = requests.get(url)
 
-    submissions = res.json().get("result", [])
+        if res.status_code != 200:
+            return []
 
-    problems = {}
+        submissions = res.json().get("result", [])
 
-    for sub in submissions:
-        verdict = sub.get("verdict")
-        if verdict == "OK":
-            continue
+        problems = {}
 
-        problem = sub.get("problem", {})
-        contest_id = problem.get("contestId")
-        index = problem.get("index")
+        for sub in submissions:
+            verdict = sub.get("verdict")
+            if verdict == "OK":
+                continue
 
-        if contest_id is None or index is None:
-            continue
+            problem = sub.get("problem", {})
+            contest_id = problem.get("contestId")
+            index = problem.get("index")
 
-        problem_id = f"{contest_id}{index}"
+            if contest_id is None or index is None:
+                continue
 
-        if problem_id not in problems:
-            problems[problem_id] = {
-                "problem_id": problem_id,
-                "name": problem.get("name"),
-                "rating": problem.get("rating"),
-                "tags": problem.get("tags", []),
-                "failed_attempts": 0,
-                "verdicts": defaultdict(int),
-                "last_failed_at": 0,
-                "languages_used": set(),
-            }
+            problem_id = f"{contest_id}{index}"
 
-        summary = problems[problem_id]
-        summary["failed_attempts"] += 1
-        summary["verdicts"][verdict] += 1
-        summary["last_failed_at"] = max(
-            summary["last_failed_at"],
-            sub.get("creationTimeSeconds", 0)
-        )
-        summary["languages_used"].add(sub.get("programmingLanguage"))
+            if problem_id not in problems:
+                problems[problem_id] = {
+                    "problem_id": problem_id,
+                    "name": problem.get("name"),
+                    "rating": problem.get("rating"),
+                    "tags": problem.get("tags", []),
+                    "failed_attempts": 0,
+                    "verdicts": defaultdict(int),
+                    "last_failed_at": 0,
+                    "languages_used": set(),
+                }
 
-    summaries = []
-    for p in problems.values():
-        summaries.append({
-            "problem_id": p["problem_id"],
-            "name": p["name"],
-            "rating": p["rating"],
-            "tags": p["tags"],
-            "failed_attempts": p["failed_attempts"],
-            "verdicts": dict(p["verdicts"]),
-            "last_failed_at": p["last_failed_at"],
-            "languages_used": list(p["languages_used"]),
-        })
+            summary = problems[problem_id]
+            summary["failed_attempts"] += 1
+            summary["verdicts"][verdict] += 1
+            summary["last_failed_at"] = max(
+                summary["last_failed_at"],
+                sub.get("creationTimeSeconds", 0)
+            )
+            summary["languages_used"].add(sub.get("programmingLanguage"))
 
-    summaries.sort(key=lambda x: x["last_failed_at"], reverse=True)
+        summaries = []
+        for p in problems.values():
+            summaries.append({
+                "problem_id": p["problem_id"],
+                "name": p["name"],
+                "rating": p["rating"],
+                "tags": p["tags"],
+                "failed_attempts": p["failed_attempts"],
+                "verdicts": dict(p["verdicts"]),
+                "last_failed_at": p["last_failed_at"],
+                "languages_used": list(p["languages_used"]),
+            })
 
-    return summaries[:limit]
+        summaries.sort(key=lambda x: x["last_failed_at"], reverse=True)
 
+        return summaries[:limit]
+    else:
+        return {}
 
 def get_most_used_lang(handle):
 
@@ -336,35 +339,38 @@ def get_full_codeforces_profile_stats(handle):
 
     try:
         data = {}
-        tags_info, solved = get_topic_distribution(handle)
-        most_used_tag = max(tags_info, key=tags_info.get)
 
-        data['most_used_tag'] = most_used_tag
+        if handle: 
+            tags_info, solved = get_topic_distribution(handle)
+            most_used_tag = max(tags_info, key=tags_info.get)
 
-
-        profile_data = get_codeforces_user_info(handle)
-        data['maxRating'] = profile_data[1]
-        data['maxRank'] = profile_data[2]
-        data['rank'] = profile_data[3]
-
-        lang_data = get_most_used_lang(handle)
-        data['most_used_lang'] = lang_data
-        data['total_solved'] = solved
+            data['most_used_tag'] = most_used_tag
 
 
-        blog_count, ratings =  get_blog_info(handle)
-        data['blog_count'] = blog_count
-        data['best_rated_blog'] = max(ratings, key=ratings.get)
-        data['best_rated_blog_ratings'] = ratings[data['best_rated_blog']]
+            profile_data = get_codeforces_user_info(handle)
+            data['maxRating'] = profile_data[1]
+            data['maxRank'] = profile_data[2]
+            data['rank'] = profile_data[3]
 
-        ratingHistory = get_rating_history(handle)
-        data['ratingHistory'] = ratingHistory
+            lang_data = get_most_used_lang(handle)
+            data['most_used_lang'] = lang_data
+            data['total_solved'] = solved
+
+
+            blog_count, ratings =  get_blog_info(handle)
+            data['blog_count'] = blog_count
+            data['best_rated_blog'] = max(ratings, key=ratings.get)
+            data['best_rated_blog_ratings'] = ratings[data['best_rated_blog']]
+
+            ratingHistory = get_rating_history(handle)
+            data['ratingHistory'] = ratingHistory
 
 
         return data
     
     except Exception as e:
-        return str(e)
+        print(f"FROM get_full_codeforces_stats: {str(e)}")
+        return {}
 
 
 
@@ -373,75 +379,79 @@ LEETCODE!!
 """
 
 def get_leetcode_submissions(username, accepted_only=False):
-    endpoint = f"/leetcode/{username}/acSubmission" if accepted_only else f"/leetcode/{username}/submission"
-    url = f"{API_BASE}{endpoint}"
-    res = requests.get(url)
 
-    
-    if res.status_code == 200:
-        return res.json()["data"]
+    if username:
+        endpoint = f"/leetcode/{username}/acSubmission" if accepted_only else f"/leetcode/{username}/submission"
+        url = f"{API_BASE}{endpoint}"
+        res = requests.get(url)
+
+        
+        if res.status_code == 200:
+            return res.json()["data"]
+        else:
+            return res.json()
     else:
-        return res.json()
+        return {}
 
 
 def get_recent_failed_leetcode_problems(submissions, limit=3):
 
     problems = {}
+    if submissions:
+        for sub in submissions:
+            slug = sub.get("titleSlug")
+            title = sub.get("title")
+            verdict = sub.get("statusDisplay")
+            ts = int(sub.get("timestamp", 0))
+            lang = sub.get("lang")
 
-    print(submissions)
-    for sub in submissions:
-        slug = sub.get("titleSlug")
-        title = sub.get("title")
-        verdict = sub.get("statusDisplay")
-        ts = int(sub.get("timestamp", 0))
-        lang = sub.get("lang")
+            if not slug or not verdict:
+                continue
 
-        if not slug or not verdict:
-            continue
+            if slug not in problems:
+                problems[slug] = {
+                    "problem_slug": slug,
+                    "title": title,
+                    "failed_attempts": 0,
+                    "verdicts": defaultdict(int),
+                    "eventually_accepted": False,
+                    "last_submission_ts": 0,
+                    "languages_used": set(),
+                }
 
-        if slug not in problems:
-            problems[slug] = {
-                "problem_slug": slug,
-                "title": title,
-                "failed_attempts": 0,
-                "verdicts": defaultdict(int),
-                "eventually_accepted": False,
-                "last_submission_ts": 0,
-                "languages_used": set(),
+            p = problems[slug]
+
+            p["last_submission_ts"] = max(p["last_submission_ts"], ts)
+            p["languages_used"].add(lang)
+
+            if verdict == "Accepted":
+                p["eventually_accepted"] = True
+            else:
+                p["failed_attempts"] += 1
+                p["verdicts"][verdict] += 1
+
+        failed_problems = [
+            {
+                "problem_slug": p["problem_slug"],
+                "title": p["title"],
+                "failed_attempts": p["failed_attempts"],
+                "verdicts": dict(p["verdicts"]),
+                "eventually_accepted": p["eventually_accepted"],
+                "last_submission_ts": p["last_submission_ts"],
+                "languages_used": list(p["languages_used"]),
             }
+            for p in problems.values()
+            if p["failed_attempts"] > 0
+        ]
 
-        p = problems[slug]
+        failed_problems.sort(
+            key=lambda x: x["last_submission_ts"],
+            reverse=True
+        )
 
-        p["last_submission_ts"] = max(p["last_submission_ts"], ts)
-        p["languages_used"].add(lang)
-
-        if verdict == "Accepted":
-            p["eventually_accepted"] = True
-        else:
-            p["failed_attempts"] += 1
-            p["verdicts"][verdict] += 1
-
-    failed_problems = [
-        {
-            "problem_slug": p["problem_slug"],
-            "title": p["title"],
-            "failed_attempts": p["failed_attempts"],
-            "verdicts": dict(p["verdicts"]),
-            "eventually_accepted": p["eventually_accepted"],
-            "last_submission_ts": p["last_submission_ts"],
-            "languages_used": list(p["languages_used"]),
-        }
-        for p in problems.values()
-        if p["failed_attempts"] > 0
-    ]
-
-    failed_problems.sort(
-        key=lambda x: x["last_submission_ts"],
-        reverse=True
-    )
-
-    return failed_problems[:limit]
-
+        return failed_problems[:limit]
+    else:
+        return {}
 
 def get_leetcode_tag_distribution(username):
     tag_mapping = {
@@ -581,17 +591,20 @@ def get_leetcode_submission_info(username):
 
 def get_full_leetcode_profile_stats(username):
     
-    data = {}
-    data = get_leetcode_submission_info(username)
+    if username:
+        data = {}
+        data = get_leetcode_submission_info(username)
 
-    langStats = get_leetcode_most_used_language(username)
-    data['most_used_lang'] = langStats['language']
+        langStats = get_leetcode_most_used_language(username)
+        data['most_used_lang'] = langStats['language']
 
-    tag_data = get_leetcode_tag_distribution(username)
-    most_used_tag = max(tag_data, key=tag_data.get)
-    data['most_used_tag'] = most_used_tag
+        tag_data = get_leetcode_tag_distribution(username)
+        most_used_tag = max(tag_data, key=tag_data.get)
+        data['most_used_tag'] = most_used_tag
 
-    return data
+        return data
+    else:
+        return {}
 
 
 def get_leetcode_contests():
@@ -701,14 +714,17 @@ CODECHEF!!
 
 def get_codechef_profile_stats(username):
 
-    res = requests.get(f"https://competeapi.vercel.app/user/codechef/{username}/")
+    data = {}
 
-    if res.status_code == 200:
-        data = res.json()
+    if username:
+        res = requests.get(f"https://competeapi.vercel.app/user/codechef/{username}/")
 
-        return data
-    else:
-        return {}
+        if res.status_code == 200:
+            data = res.json()
+
+    return data
+
+
 
 
 def get_codechef_contests():
@@ -791,7 +807,7 @@ def get_unified_tag_distribution(leetcode_username=None, codeforces_handle=None)
     
 
     unified_distribution = {tag: 0 for tag in standard_tags}
-    
+    print(f"Inside the unified tag distribution func | Leetcode: {leetcode_username} | Codeforces: {codeforces_handle}")
 
     if leetcode_username:
         try:
@@ -817,8 +833,6 @@ def get_unified_tag_distribution(leetcode_username=None, codeforces_handle=None)
     
 
     return {tag: count for tag, count in unified_distribution.items() if count > 0}
-
-
 
 
 def get_unified_problem_recommendations(

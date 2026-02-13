@@ -188,7 +188,7 @@ def get_ai_response(query, context):
         - Encourage building a mental library of techniques rather than memorizing solutions.
 
         Strict Prohibitions:
-        - No giving complete code implementations, optimal solutions, or working code snippets.
+        - No giving complete code implementations, optimal solutions, or working code snippets. EVEN PSEUDOCODE IS NOT ALLOWED.
         - No solving the problem directly — even if the user is stuck.
         - No providing the exact algorithm name if it would remove the discovery process (hint instead: "Think about processing elements in a specific order...").
         - No bypassing the thinking process with direct answers.
@@ -210,6 +210,7 @@ def get_ai_response(query, context):
         - Use inline code formatting (`like this`) for flags, variables, and states.
         - Do NOT use plain numbered paragraphs for sectioning.
         - Every response MUST be valid Markdown and render cleanly with MarkdownIt.
+        - Add markdown that will be changed to <br> tags during MarkdownIt rendering, I want whitespaces and spaced out headings, don't clutter them
 
         CONTEXT START
 
@@ -228,11 +229,13 @@ def get_ai_response(query, context):
                 }
             ]
         )
+
         return completion.choices[0].message.content
+    
     except groq.RateLimitError as e:
             return "## ❗❗ Rate limit reached\n\nPlease slow down and try again in a moment."
     except Exception as e:
-         return f"## {str(e.message)}"
+         return f"## {str(e)}"
 
 def feedback_generator(info):
 
@@ -270,12 +273,14 @@ def feedback_generator(info):
             response_format=response_format
         )
 
+        print(response.choices[0].message.content)
+
         return json.loads(response.choices[0].message.content or "{}")
     
     except groq.RateLimitError as e:
          return {"error" : "❗❗ Rate limit reached\n\nPlease slow down and try again in a moment."}
     except Exception as e:
-         return {"error" : str(e.message)}
+         return {"error" : str(e)}
 
 
 
