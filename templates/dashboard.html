@@ -85,7 +85,7 @@
             <div class="flex items-center justify-center size-8 bg-primary/20 rounded-lg text-primary">
                 <span class="material-symbols-outlined text-2xl">terminal</span>
             </div>
-            <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">AlgoDash</h2>
+            <a class="text-white text-xl font-bold tracking-tight" href="{{ url_for('landing') }}">AlgoDash</a>
         </div>
         <div class="hidden lg:flex items-center gap-8">
             <a class="text-primary transition-colors text-sm font-medium" href="{{ url_for('dashboard') }}">Dashboard</a>
@@ -486,6 +486,19 @@
       </div>
     </div>
 
+{% else %}
+
+  <div class="col-span-full text-center py-12">
+    <span class="material-symbols-outlined text-4xl text-text-muted mb-3">
+      link_off
+    </span>
+    <p class="text-text-muted">
+      Please connect your
+      <span class="text-white font-semibold">CodeChef</span>
+      account to AlgoDash.
+    </p>
+  </div>
+
 {% endif %}
 </section>
 </section>
@@ -549,7 +562,7 @@
 <footer class="border-t border-border-dark bg-background-dark py-8 mt-auto">
 <div class="max-w-[1400px] mx-auto px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
 <p class="text-text-muted text-sm">© 2026 AlgoDash. All rights reserved.</p>
-<div class="flex gap-6">
+<div class="flex gap-6 hidden">
 <a class="text-text-muted hover:text-primary transition-colors text-sm" href="#">Privacy Policy</a>
 <a class="text-text-muted hover:text-primary transition-colors text-sm" href="#">Terms of Service</a>
 </div>
@@ -588,21 +601,6 @@
   });
 
 
-
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const ratingHistory = {{ platforms.codeforces.data.ratingHistory | tojson | safe }};
-    
-    if (ratingHistory && ratingHistory.length > 0) {
-        renderCodeforcesChart(ratingHistory);
-      }
-    });
-
-    const tagData = {{ tag_distribution | tojson | safe }};
-  
-    if (tagData && Object.keys(tagData).length > 0) {
-      renderTagChart(tagData);
-    }
 
   function renderCodeforcesChart(ratingHistory) {
     const ctx = document.getElementById('cf-rating-chart');
@@ -838,6 +836,23 @@
     });
   }
 }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    {% if platforms.codeforces.connected and platforms.codeforces.data %}
+      const ratingHistory = {{ platforms.codeforces.data.ratingHistory | tojson | safe }};
+      
+      if (ratingHistory && ratingHistory.length > 0) {
+        renderCodeforcesChart(ratingHistory);
+      }
+    {% endif %}
+
+    // Tag distribution - ALWAYS runs now
+    const tagData = {{ tag_distribution | tojson | safe }};
+    
+    if (tagData && Object.keys(tagData).length > 0) {
+      renderTagChart(tagData);
+    }
+  });
 
 </script>
 </body></html>

@@ -143,6 +143,15 @@
                 </button>
     </a>
 </div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class=flashes>
+            {% for cat, msg in messages %}
+                <li class="{{ cat }}"> {{ msg}} </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
 </section>
 <section class="py-20 px-4 md:px-10 bg-background-dark/50 relative" id="features">
 <div class="max-w-[1280px] mx-auto flex flex-col gap-12">
@@ -288,14 +297,14 @@
 <footer class="bg-[#0f0c13] border-t border-surface-border/50 pt-16 pb-8 px-4 md:px-10">
 <div class="max-w-[1280px] mx-auto flex flex-col items-center">
 <div class="flex flex-wrap justify-center gap-8 md:gap-12 mb-12">
-<a class="text-gray-400 hover:text-primary text-base font-medium transition-colors" href="#">Documentation</a>
-<a class="text-gray-400 hover:text-primary text-base font-medium transition-colors" href="#">API Reference</a>
-<a class="text-gray-400 hover:text-primary text-base font-medium transition-colors" href="#">Community</a>
-<a class="text-gray-400 hover:text-primary text-base font-medium transition-colors" href="#">Blog</a>
+<a class="text-gray-400 hover:text-primary text-base font-medium transition-colors" href="https://github.com/Aruniaaa/AlgoDash">Documentation</a>
+<a class="text-gray-400 hover:text-primary text-base font-medium transition-colors" href="https://github.com/Aruniaaa/AlgoDash">API Reference</a>
+<a class="text-gray-400 hover:text-primary text-base font-medium transition-colors" href="https://github.com/Aruniaaa/AlgoDash/pulls">Contribute</a>
+<a class="text-gray-400 hover:text-primary text-base font-medium transition-colors" href="{{ url_for('contact') }}">Contact Us</a>
 </div>
 <div class="w-full border-t border-surface-border/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
 <p class="text-gray-600 text-sm">© 2026 AlgoDash Inc. All rights reserved.</p>
-<div class="flex gap-6">
+<div class="flex gap-6 hidden">
 <a class="text-gray-600 hover:text-gray-400 text-sm" href="#">Terms</a>
 <a class="text-gray-600 hover:text-gray-400 text-sm" href="#">Privacy</a>
 <a class="text-gray-600 hover:text-gray-400 text-sm" href="#">Cookies</a>
