@@ -1,4 +1,4 @@
-# AlgoDash
+# AlgoDash [WORK IN PROGRESS, GITHUB MIGHT NOT ALWAYS BE UPDATED]
 
 A personalized DSA & competitive programming dashboard that guides without giving shortcuts.
 
