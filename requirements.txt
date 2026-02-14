@@ -8,3 +8,4 @@ markdown-it-py
 mdit-py-plugins
 linkify-it-py
 Flask-Caching
+gunicorn
