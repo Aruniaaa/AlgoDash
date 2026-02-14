@@ -50,26 +50,7 @@ git clone https://github.com/Aruniaaa/AlgoDash
 cd AlgoDash
 ````
 
-### 2. Clone the required API repository inside the project
-
-AlgoDash depends on an external API wrapper for fetching LeetCode, CodeChef, and GFG data.
-
-Clone it inside the AlgoDash root directory:
-
-```bash
-git clone https://github.com/coder-writes/leetcode-gfg-codechef-api api
-```
-
-Your folder structure should now include:
-
-```
-AlgoDash/
-└── api/
-```
-
-If this repo is missing or placed elsewhere, platform data fetching will fail.
-
-### 3. Create a virtual environment & install dependencies
+### 2. Create a virtual environment & install dependencies
 
 ```bash
 python -m venv venv
@@ -79,14 +60,14 @@ venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 ```
 
-### 4. Environment Variables
+### 3. Environment Variables
 
 Create a `.env` file in the root directory and add:
 
 ```env
 SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SUPABASE_KEY=your_anon_key
+SUPABASE_SERVICE_KEY=your_service_role_key
 
 GROQ_API_KEY=your_groq_api_key
 
@@ -99,11 +80,13 @@ AlgoDash uses two Supabase clients:
 * Public (anon key) for safe reads
 * Service role key for secure inserts/updates (feedback, timestamps)
 
-### 5. Run the application
+### 4. Run the application
 
 ```bash
-cd api
+cd leetcode-codechef-api
 npm start
+
+
 python views.py
 ```
 
