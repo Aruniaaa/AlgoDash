@@ -1,10 +1,12 @@
 import requests
 from datetime import datetime
+import os
 from collections import defaultdict
 
 
 BASE_URL = "https://codeforces.com/api/"
-API_BASE = "http://localhost:3000"
+API_BASE = os.getenv('NODE_API_URL', 'http://localhost:3000')
+
 tags_list_all = [
     "math",
     "greedy",
