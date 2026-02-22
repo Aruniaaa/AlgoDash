@@ -1,16 +1,34 @@
-from flask import Flask, request, render_template, redirect, url_for, session, flash
-from flask_caching import Cache
-from functools import wraps
 import os
-from supabase import create_client, Client
-from dotenv import load_dotenv
-from info import get_recent_failed_problem_summaries, get_leetcode_submissions, get_recent_failed_leetcode_problems, get_unified_problem_recommendations, get_unified_tag_distribution, get_full_codeforces_profile_stats, get_codechef_profile_stats, get_full_leetcode_profile_stats
-from llm import get_ai_response, feedback_generator
-from flask import jsonify
-from mdit_py_plugins.texmath import texmath_plugin
-from markdown_it import MarkdownIt
 from datetime import datetime, timezone
+from functools import wraps
 
+from dotenv import load_dotenv
+from flask import (
+    Flask,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_caching import Cache
+from markdown_it import MarkdownIt
+from mdit_py_plugins.texmath import texmath_plugin
+from supabase import Client, create_client
+
+from info import (
+    get_codechef_profile_stats,
+    get_full_codeforces_profile_stats,
+    get_full_leetcode_profile_stats,
+    get_leetcode_submissions,
+    get_recent_failed_leetcode_problems,
+    get_recent_failed_problem_summaries,
+    get_unified_problem_recommendations,
+    get_unified_tag_distribution,
+)
+from llm import feedback_generator, get_ai_response
 
 load_dotenv()
 
@@ -23,13 +41,14 @@ supabase_admin: Client = create_client(url, secret_key)
 
 conversation_history = []
 
+
 def login_required(view_func):
     @wraps(view_func)
     def wrapped_view(*args, **kwargs):
-        user_id = session.get('user_id')
+        user_id = session.get("user_id")
 
         if not user_id:
-            return redirect(url_for('login', next=request.path))
+            return redirect(url_for("login", next=request.path))
 
         return view_func(*args, **kwargs)
 
@@ -39,18 +58,15 @@ def login_required(view_func):
 app = Flask(__name__, template_folder="templates")
 app.secret_key = os.getenv("SECRET_KEY")
 
-config = {
-    "DEBUG": True,          
-    "CACHE_TYPE": "SimpleCache", 
-    "CACHE_DEFAULT_TIMEOUT": 3600
-}
+config = {"DEBUG": True, "CACHE_TYPE": "SimpleCache", "CACHE_DEFAULT_TIMEOUT": 3600}
 
 app.config.from_mapping(config)
 cache = Cache(app)
 
+
 @app.route("/", endpoint="landing")
 def landing():
-    if request.method == 'GET':
+    if request.method == "GET":
         user_id = session.get("user_id")
 
         authenticated = False
@@ -60,15 +76,17 @@ def landing():
             authenticated = True
             username = session.get("username")
 
-        return render_template('landing.html', authenticated=authenticated, username=username)
-    
+        return render_template(
+            "landing.html", authenticated=authenticated, username=username
+        )
+
 
 @app.route("/login", endpoint="login", methods=["GET", "POST"])
 def login():
 
     if request.method == "GET":
         return render_template("login.html")
-    
+
     elif request.method == "POST":
         email = request.form.get("email", None)
         password = request.form.get("password", None)
@@ -77,46 +95,56 @@ def login():
             flash("All required fields must be filled.", "warning")
             return redirect(url_for("login"))
 
-
         elif email and password:
             try:
-                response = supabase_admin.auth.sign_in_with_password({
-                    "email": email,
-                    "password": password,
-                })
+                response = supabase_admin.auth.sign_in_with_password(
+                    {
+                        "email": email,
+                        "password": password,
+                    }
+                )
 
                 if not response.user:
                     flash("Invalid credentials.", "warning")
                     return redirect(url_for("login"))
 
-
                 user = supabase_admin.auth.get_user()
                 user_id = user.user.id
 
-                profile_response = supabase_admin.table('profiles')\
-                    .select('*')\
-                    .eq('id', user_id)\
-                    .single()\
+                profile_response = (
+                    supabase_admin.table("profiles")
+                    .select("*")
+                    .eq("id", user_id)
+                    .single()
                     .execute()
-                
+                )
 
-                profile = profile_response.data                
-                
+                profile = profile_response.data
+
                 session["user_id"] = user_id
                 session["username"] = profile.get("username")
-                session["leetcode_username"] = profile.get("leetcode_username") if profile.get("leetcode_username") != "" else None
-                session["codeforces_username"] = profile.get("codeforces_username") if profile.get("codeforces_username") != "" else None
-                session["codechef_username"] = profile.get("codechef_username") if profile.get("codechef_username") != "" else None
-
+                session["leetcode_username"] = (
+                    profile.get("leetcode_username")
+                    if profile.get("leetcode_username") != ""
+                    else None
+                )
+                session["codeforces_username"] = (
+                    profile.get("codeforces_username")
+                    if profile.get("codeforces_username") != ""
+                    else None
+                )
+                session["codechef_username"] = (
+                    profile.get("codechef_username")
+                    if profile.get("codechef_username") != ""
+                    else None
+                )
 
                 flash("Login successful!", "info")
                 return redirect(url_for("landing"))
-            
+
             except Exception as e:
                 flash(f"Login failed: {str(e)}", "error")
                 return redirect(url_for("login"))
-
-    
 
 
 @app.route("/signup", endpoint="signup", methods=["GET", "POST"])
@@ -137,7 +165,6 @@ def signup():
         codeforces = codeforces if codeforces else None
         codechef = codechef if codechef else None
 
-       
         if not username or not email or not password:
             flash("All required fields must be filled.", "warning")
             return redirect(url_for("signup"))
@@ -147,37 +174,34 @@ def signup():
             return redirect(url_for("signup"))
 
         try:
-
-            response = supabase_admin.auth.sign_up({
-                "email": email,
-                "password": password
-            })
+            response = supabase_admin.auth.sign_up(
+                {"email": email, "password": password}
+            )
 
             user = response.user
             if not user:
                 flash("Signup failed!", "error")
-                return redirect(url_for('signup'))
-
+                return redirect(url_for("signup"))
 
             user_id = user.id
-            supabase_admin.table("profiles").insert({
-                "id": user_id,
-                "username": username,
-                "leetcode_username": leetcode,
-                "codeforces_username": codeforces,
-                "codechef_username": codechef,
-            }).execute()
+            supabase_admin.table("profiles").insert(
+                {
+                    "id": user_id,
+                    "username": username,
+                    "leetcode_username": leetcode,
+                    "codeforces_username": codeforces,
+                    "codechef_username": codechef,
+                }
+            ).execute()
 
-              
             session["user_id"] = user.id
             session["username"] = username
-            session["leetcode_username"] = leetcode 
-            session["codeforces_username"] = codeforces 
-            session["codechef_username"] = codechef 
+            session["leetcode_username"] = leetcode
+            session["codeforces_username"] = codeforces
+            session["codechef_username"] = codechef
 
             flash("Welcome to AlgoDash!", "info")
             return redirect(url_for("landing"))
-
 
         except Exception as e:
             flash(str(e), "error")
@@ -211,7 +235,6 @@ def dashboard():
         codechef_user = session.get("codechef_username")
 
         if platforms is None:
-
             leetcode_data = None
             codechef_data = None
             codeforces_data = None
@@ -238,7 +261,6 @@ def dashboard():
                 },
             }
 
-
         tag_distribution = None
 
         if leetcode_user or codeforces_user:
@@ -246,49 +268,48 @@ def dashboard():
             if tag_distribution is None:
                 tag_distribution = get_unified_tag_distribution(
                     leetcode_username=leetcode_user if leetcode_user else None,
-                    codeforces_handle=codeforces_user if codeforces_user else None
+                    codeforces_handle=codeforces_user if codeforces_user else None,
                 )
                 cache.set(f"user:{session.get('user_id')}:tag", tag_distribution)
 
         if not any(p["connected"] for p in platforms.values()):
             flash("Please connect at least one platform to continue.", "warning")
             return redirect(url_for("landing"))
-        
+
         cache.set(f"user:{session.get('user_id')}:profile", platforms)
 
         return render_template(
             "dashboard.html",
             username=session.get("username"),
             platforms=platforms,
-            tag_distribution=tag_distribution
+            tag_distribution=tag_distribution,
         )
-    
+
     except Exception as e:
-        print(f"Dashboard error: {e}")  
-        flash("An error occurred, please try refreshing or contacting the dev!", "error")
+        print(f"Dashboard error: {e}")
+        flash(
+            "An error occurred, please try refreshing or contacting the dev!", "error"
+        )
         authed = bool(session.get("user_id"))
         username = session.get("username")
         return render_template("landing.html", authenticated=authed, username=username)
-    
+
 
 @login_required
 @app.route("/chat", endpoint="chat", methods=["GET", "POST"])
 def chat():
-    
+
     if request.method == "GET":
         return render_template("chat.html")
-    
+
     elif request.method == "POST":
         try:
             data = request.json
             doubt = data.get("doubt", "")
-            
+
             if not doubt:
-                return jsonify({
-                    "success": False,
-                    "error": "No doubt provided"
-                }), 400
-            
+                return jsonify({"success": False, "error": "No doubt provided"}), 400
+
             context = []
 
             if len(conversation_history) == 1:
@@ -296,76 +317,72 @@ def chat():
             elif len(conversation_history) > 2:
                 context = conversation_history[-2]
 
-            
             ai_response = get_ai_response(doubt, context)
-            conversation_history.append({"user" : ai_response, "ai_response": ai_response})
-            
+            conversation_history.append(
+                {"user": ai_response, "ai_response": ai_response}
+            )
+
             md = MarkdownIt("gfm-like", {"linkify": False}).use(texmath_plugin)
             ai_response = md.render(ai_response)
 
-        
-            ai_response = f'''
+            ai_response = f"""
             <div class="markdown-content">
                 {ai_response}
             </div>
-            '''
+            """
 
             if len(conversation_history) > 2:
                 conversation_history.pop(0)
 
-            return jsonify({
-                "success": True,
-                "response": ai_response
-            })
-            
+            return jsonify({"success": True, "response": ai_response})
+
         except Exception as e:
-            flash("An error occured, please try refreshing or contacting the dev!", "error")
+            flash(
+                "An error occured, please try refreshing or contacting the dev!",
+                "error",
+            )
             print(f"Error in chat endpoint: {e}")
-            return jsonify({
-                "success": False,
-                "error": str(e)
-            }), 500
+            return jsonify({"success": False, "error": str(e)}), 500
 
 
 @login_required
 @app.route("/problem_recommendation", endpoint="problem_recommendation")
 def problem_recommendation():
-    
+
     try:
         if request.method == "GET":
             problem_recommendations = cache.get(f"user:{session.get('user_id')}:recs")
 
-
             if problem_recommendations is None:
                 leetcode_username = session.get("leetcode_username")
                 codeforces_username = session.get("codeforces_username")
-                
+
                 tag_distribution = get_unified_tag_distribution(
                     leetcode_username=leetcode_username if leetcode_username else None,
-                    codeforces_handle=codeforces_username if codeforces_username else None
+                    codeforces_handle=codeforces_username
+                    if codeforces_username
+                    else None,
                 )
                 cache.set(f"user:{session.get('user_id')}:tag", tag_distribution)
-            
+
                 weak_tags = []
                 if tag_distribution:
                     sorted_tags = sorted(tag_distribution.items(), key=lambda x: x[1])
-                    
+
                     weak_count = max(3, len(sorted_tags) // 3)
                     weak_tags = [tag for tag, count in sorted_tags[:weak_count]]
-                    
 
                 if not weak_tags:
-                    weak_tags = ['dp', 'greedy', 'graphs']
+                    weak_tags = ["dp", "greedy", "graphs"]
 
                 recommendations = get_unified_problem_recommendations(
                     tags=weak_tags,
                     limit_per_platform=15,
                     include_contests=True,
-                    platforms=['leetcode', 'codeforces', 'codechef']
+                    platforms=["leetcode", "codeforces", "codechef"],
                 )
                 cache.set(f"user:{session.get('user_id')}:recs", recommendations)
 
-                
             return render_template(
                 "problems.html",
                 recommendations=recommendations,
@@ -381,14 +398,12 @@ def problem_recommendation():
 @login_required
 @app.route("/ai_feedback", endpoint="ai_feedback")
 def ai_feedback():
-    try: 
+    try:
         user_id = session.get("user_id")
         today_utc = datetime.now(timezone.utc).date()
 
-
         res = (
-            supabase
-            .table("profiles")
+            supabase.table("profiles")
             .select("ai_feedback, last_feedback_generated")
             .eq("id", user_id)
             .maybe_single()
@@ -403,8 +418,10 @@ def ai_feedback():
             ).date()
 
             if last_generated_date == today_utc:
-                return render_template("ai_feedback.html", ai_feedback=row["ai_feedback"])
-        
+                return render_template(
+                    "ai_feedback.html", ai_feedback=row["ai_feedback"]
+                )
+
         tag_distro = cache.get(f"user:{session.get('user_id')}:tag")
         if tag_distro is None:
             tag_distro = get_unified_tag_distribution(
@@ -423,17 +440,20 @@ def ai_feedback():
                 "leetcode": {
                     "connected": bool(leetcode_user),
                     "data": get_full_leetcode_profile_stats(leetcode_user)
-                    if leetcode_user else None,
+                    if leetcode_user
+                    else None,
                 },
                 "codeforces": {
                     "connected": bool(codeforces_user),
                     "data": get_full_codeforces_profile_stats(codeforces_user)
-                    if codeforces_user else None,
+                    if codeforces_user
+                    else None,
                 },
                 "codechef": {
                     "connected": bool(codechef_user),
                     "data": get_codechef_profile_stats(codechef_user)
-                    if codechef_user else None,
+                    if codechef_user
+                    else None,
                 },
             }
             cache.set(f"user:{session.get('user_id')}:profile", dashboard_info)
@@ -451,7 +471,6 @@ def ai_feedback():
                 session.get("codeforces_username")
             )
 
-
         info_to_send = {
             "tag_distribution": tag_distro,
             "dashboard_info": dashboard_info,
@@ -459,18 +478,17 @@ def ai_feedback():
             "failed_codeforces": failed_codeforces,
         }
 
-
         ai_feedback = feedback_generator(info_to_send)
-        if ("error" in ai_feedback):
-            flash(ai_feedback['error'], "error")
+        if "error" in ai_feedback:
+            flash(ai_feedback["error"], "error")
             authed = True if session.get("user_id") else False
             username = session.get("username")
-            return render_template("landing.html", authenticated=authed, username=username)
-
+            return render_template(
+                "landing.html", authenticated=authed, username=username
+            )
 
         if not isinstance(ai_feedback, dict):
             raise RuntimeError("LLM feedback generation failed")
-        
 
         supabase_admin.table("profiles").upsert(
             {
@@ -482,7 +500,7 @@ def ai_feedback():
         ).execute()
 
         return render_template("ai_feedback.html", ai_feedback=ai_feedback)
-    
+
     except Exception as e:
         print(str(e))
         flash("An error occured, please try refreshing or contacting the dev!", "error")
@@ -491,5 +509,5 @@ def ai_feedback():
         return render_template("landing.html", authenticated=authed, username=username)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

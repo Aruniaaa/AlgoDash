@@ -54,7 +54,7 @@
             background-color: #443b54;
             border-radius: 20px;
         }
-        
+
         #tag-chart-container {
           scrollbar-width: thin;
           scrollbar-color: #443b54 transparent;
@@ -195,14 +195,14 @@
 
     <div class="flex items-center gap-4">
       <div class="p-3 rounded-xl bg-success/15 text-success">
-        <span class="material-symbols-outlined">percent</span>
+        <span class="material-symbols-outlined">asterisk</span>
       </div>
       <div>
         <p class="text-text-muted text-xs uppercase tracking-wide">
-          Acceptance Rate
+          Contribution Point
         </p>
         <p class="text-2xl font-bold">
-          {{ platforms.leetcode.data.acceptanceRate }}%
+          {{ platforms.leetcode.data.contributionPoint }}
         </p>
       </div>
     </div>
@@ -545,7 +545,7 @@
         <div id="tag-chart-container" class="flex items-end justify-start gap-3 md:gap-6 h-48 min-w-max px-2">
         </div>
       </div>
-      
+
       <div class="flex justify-center gap-2 mt-4">
         <button id="scroll-left" class="p-2 rounded-lg bg-surface-dark/60 border border-border-dark hover:border-primary transition-colors">
           <span class="material-symbols-outlined text-sm">chevron_left</span>
@@ -570,7 +570,7 @@
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-  
+
 
   document.querySelectorAll('[data-widget]').forEach(widget => {
     const tabs = widget.querySelectorAll('[data-platform]');
@@ -586,7 +586,7 @@
           t.classList.remove('active', 'bg-primary/20', 'text-primary', 'font-semibold');
           t.classList.add('text-text-muted', 'font-medium');
         });
-        
+
         tab.classList.add('active', 'bg-primary/20', 'text-primary', 'font-semibold');
         tab.classList.remove('text-text-muted', 'font-medium');
 
@@ -611,21 +611,21 @@
       const date = new Date(entry.date * 1000);
       return date.toLocaleDateString('en-US', { year: '2-digit', month: 'short' });
     });
-    
+
     const ratings = ratingHistory.map(entry => entry.rating);
     const maxRating = Math.max(...ratings);
     const minRating = Math.min(...ratings);
 
     function getRankColor(rating) {
-      if (rating >= 3000) return '#ff0000'; 
-      if (rating >= 2600) return '#ff8c00'; 
-      if (rating >= 2400) return '#ff0000'; 
-      if (rating >= 2300) return '#ff8c00'; 
-      if (rating >= 2100) return '#aa00aa'; 
+      if (rating >= 3000) return '#ff0000';
+      if (rating >= 2600) return '#ff8c00';
+      if (rating >= 2400) return '#ff0000';
+      if (rating >= 2300) return '#ff8c00';
+      if (rating >= 2100) return '#aa00aa';
       if (rating >= 1900) return '#ff8c00';
-      if (rating >= 1600) return '#aa00aa'; 
-      if (rating >= 1400) return '#0000ff'; 
-      if (rating >= 1200) return '#03a89e'; 
+      if (rating >= 1600) return '#aa00aa';
+      if (rating >= 1400) return '#0000ff';
+      if (rating >= 1200) return '#03a89e';
       return '#808080';
     }
 
@@ -752,15 +752,15 @@
   console.log('Tag data:', tagData);
 
   const sortedTags = Object.entries(tagData).sort((a, b) => b[1] - a[1]);
-  
+
   if (sortedTags.length === 0) {
     console.error('No tags to display!');
     container.innerHTML = '<p class="text-text-muted">No data available</p>';
     return;
   }
-  
+
   const maxCount = Math.max(...sortedTags.map(([_, count]) => count));
-  
+
   const colors = [
     { bg: 'rgba(14, 165, 233, 0.2)', fill: '#0ea5e9' },
     { bg: 'rgba(131, 60, 246, 0.2)', fill: '#833cf6' },
@@ -773,64 +773,64 @@
     { bg: 'rgba(6, 182, 212, 0.2)', fill: '#06b6d4' },
     { bg: 'rgba(168, 85, 247, 0.2)', fill: '#a855f7' },
   ];
-  
+
   container.innerHTML = '';
-  
+
   sortedTags.forEach(([tag, count], index) => {
     const percentage = (count / maxCount) * 100;
     const color = colors[index % colors.length];
-    
+
     const barWrapper = document.createElement('div');
     barWrapper.className = 'flex-shrink-0 flex flex-col items-center gap-2 group cursor-pointer';
     barWrapper.style.width = '60px';
-    
+
     const barContainer = document.createElement('div');
     barContainer.className = 'w-full relative rounded-t-lg overflow-hidden transition-all duration-300';
     barContainer.style.backgroundColor = color.bg;
-    barContainer.style.height = '192px'; 
+    barContainer.style.height = '192px';
     barContainer.style.flexShrink = '0';
-    
+
     const barFill = document.createElement('div');
     barFill.className = 'absolute bottom-0 w-full rounded-t-lg transition-all duration-500';
     barFill.style.backgroundColor = color.fill;
     barFill.style.height = percentage + '%';
-    
+
     const countLabel = document.createElement('div');
     countLabel.className = 'absolute top-2 left-1/2 transform -translate-x-1/2 text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity z-10';
     countLabel.textContent = count;
-    
+
     const tagName = document.createElement('span');
     tagName.className = 'text-[10px] text-text-muted text-center font-medium w-full truncate group-hover:text-white transition-colors';
     tagName.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
     tagName.title = tag + ': ' + count + ' problems';
-    
+
     barWrapper.addEventListener('mouseenter', () => {
       barContainer.style.backgroundColor = color.bg.replace('0.2', '0.3');
       const newHeight = Math.min(percentage + 2, 100);
       barFill.style.height = newHeight + '%';
     });
-    
+
     barWrapper.addEventListener('mouseleave', () => {
       barContainer.style.backgroundColor = color.bg;
       barFill.style.height = percentage + '%';
     });
-    
+
     barContainer.appendChild(barFill);
     barContainer.appendChild(countLabel);
     barWrapper.appendChild(barContainer);
     barWrapper.appendChild(tagName);
     container.appendChild(barWrapper);
   });
-  
+
   const scrollLeftBtn = document.getElementById('scroll-left');
   const scrollRightBtn = document.getElementById('scroll-right');
   const scrollContainer = container.parentElement;
-  
+
   if (scrollLeftBtn && scrollRightBtn && scrollContainer) {
     scrollLeftBtn.addEventListener('click', () => {
       scrollContainer.scrollBy({ left: -300, behavior: 'smooth' });
     });
-    
+
     scrollRightBtn.addEventListener('click', () => {
       scrollContainer.scrollBy({ left: 300, behavior: 'smooth' });
     });
@@ -840,7 +840,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     {% if platforms.codeforces.connected and platforms.codeforces.data %}
       const ratingHistory = {{ platforms.codeforces.data.ratingHistory | tojson | safe }};
-      
+
       if (ratingHistory && ratingHistory.length > 0) {
         renderCodeforcesChart(ratingHistory);
       }
@@ -848,7 +848,7 @@
 
     // Tag distribution - ALWAYS runs now
     const tagData = {{ tag_distribution | tojson | safe }};
-    
+
     if (tagData && Object.keys(tagData).length > 0) {
       renderTagChart(tagData);
     }
