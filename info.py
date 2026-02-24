@@ -372,6 +372,7 @@ def get_full_codeforces_profile_stats(handle):
             data["total_solved"] = solved
 
             blog_count, ratings = get_blog_info(handle)
+
             data["blog_count"] = blog_count
             data["best_rated_blog"] = max(ratings, key=ratings.get)
             data["best_rated_blog_ratings"] = ratings[data["best_rated_blog"]]
@@ -834,9 +835,6 @@ def get_unified_tag_distribution(leetcode_username=None, codeforces_handle=None)
     }
 
     unified_distribution = {tag: 0 for tag in standard_tags}
-    print(
-        f"Inside the unified tag distribution func | Leetcode: {leetcode_username} | Codeforces: {codeforces_handle}"
-    )
 
     if leetcode_username:
         try:
